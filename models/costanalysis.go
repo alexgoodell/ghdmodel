@@ -1,9 +1,9 @@
 //test comment
 package costanalysis
 
-import (
-	"fmt"
-)
+// import (
+// 	"fmt"
+// )
 
 const (
 	CYCLES = 40
@@ -12,72 +12,70 @@ const (
 type Inputs struct {
 	spendings []Spending // InterventionSubpopulationNationCoverage
 	costs     []Cost
-	custom    Custom
+	custom    CountryStats
 }
 
-// CountryStats?
-type Custom struct {
-	groups []string
+type CountryStats struct {
 	// the next too seem redundant
 	diseaseStages                             []string
 	diseaseAndTreatmentStages                 []string
 	populationSize                            int
 	populationSizeByGroup                     []int
-	HivPrevalenceAdultsByGroup                []float
-	HivPrevalence15yoByGroup                  []float
-	ProprtionDiseaseStage                     []float
-	InfectiousnessByDiseaseStage              []float
-	HivDeathRateByDiseaseStage                []float
-	HivDeathRateByDiseaseStageTx              []float
-	InitialTreatmentAccessByDiseaseStage      []float
-	TreatmentRecuitingRateByDiseaseStage      []float
-	EntryRateGenPop                           float
-	MaturationRate                            float
-	DeathRateGeneralCauses                    float
-	LifeExpectancy                            float
-	SwInitiationRate                          float
-	SwQuitRate                                float
-	EntryRateMsm                              float
-	EntryRateIdu                              float
-	IduInitiationRate                         float
-	IduSpontaneousQuitRate                    float
-	IduDeathRate                              float
-	IncreaseInInfectiousnessHomosexual        float
-	DiseaseProgressionUntreatedAcuteToEarly   float
-	DiseaseProgressionUntreatedEarlyToMedium  float
-	DiseaseProgressionUntreatedMediumToLate   float
-	DiseaseProgressionUntreatedLateToAdvanced float
-	DiseaseProgressionUntreatedAdvancedToAids float
-	DiseaseProgressionTreatedAcuteToEarly     float
-	DiseaseProgressionTreatedEarlyToMedium    float
-	DiseaseProgressionTreatedMediumToLate     float
-	DiseaseProgressionTreatedLateToAdvanced   float
-	DiseaseProgressionTreatedAdvancedToAids   float
-	GeneralNonSwPartnershipsYearly            float
-	GeneralCondomUse                          float
-	GeneralCondomEffectiveness                float
-	SwProportionWhoUseServices                float
-	SwPartnershipsYearly                      float
-	SwCondomUseRate                           float
-	MsmPartnershipsYearly                     float
-	MsmCondomUseRate                          float
-	TreatmentReductionOfInfectiousness        float
-	TreatmentQuitRate                         float
-	PercentOfIduSexPartners                   float
-	IduPartnershipsYearly                     float
-	IduCondomUseRate                          float
-	AnnualNumberOfInjections                  float
-	PercentSharedInjections                   float
-	PercentMaleIdus                           float
-	InfectiousnessInSharedInjection           float
-	CircEffectiveness                         float
+	hivPrevalenceAdultsByGroup                []float64
+	hivPrevalence15yoByGroup                  []float64
+	proprtionDiseaseStage                     []float64
+	infectiousnessByDiseaseStage              []float64
+	hivDeathRateByDiseaseStage                []float64
+	hivDeathRateByDiseaseStageTx              []float64
+	initialTreatmentAccessByDiseaseStage      []float64
+	treatmentRecuitingRateByDiseaseStage      []float64
+	entryRateGenPop                           float64
+	maturationRate                            float64
+	deathRateGeneralCauses                    float64
+	lifeExpectancy                            float64
+	swInitiationRate                          float64
+	swQuitRate                                float64
+	entryRateMsm                              float64
+	entryRateIdu                              float64
+	iduInitiationRate                         float64
+	iduSpontaneousQuitRate                    float64
+	iduDeathRate                              float64
+	increaseInInfectiousnessHomosexual        float64
+	diseaseProgressionUntreatedAcuteToEarly   float64
+	diseaseProgressionUntreatedEarlyToMedium  float64
+	diseaseProgressionUntreatedMediumToLate   float64
+	diseaseProgressionUntreatedLateToAdvanced float64
+	diseaseProgressionUntreatedAdvancedToAids float64
+	diseaseProgressionTreatedAcuteToEarly     float64
+	diseaseProgressionTreatedEarlyToMedium    float64
+	diseaseProgressionTreatedMediumToLate     float64
+	diseaseProgressionTreatedLateToAdvanced   float64
+	diseaseProgressionTreatedAdvancedToAids   float64
+	generalNonSwPartnershipsYearly            float64
+	generalCondomUse                          float64
+	generalCondomEffectiveness                float64
+	swProportionWhoUseServices                float64
+	swPartnershipsYearly                      float64
+	swCondomUseRate                           float64
+	msmPartnershipsYearly                     float64
+	smCondomUseRate                          float64
+	treatmentReductionOfInfectiousness        float64
+	treatmentQuitRate                         float64
+	percentOfIduSexPartners                   float64
+	iduPartnershipsYearly                     float64
+	iduCondomUseRate                          float64
+	annualNumberOfInjections                  float64
+	percentSharedInjections                   float64
+	percentMaleIdus                           float64
+	infectiousnessInSharedInjection           float64
+	circEffectiveness                         float64
 }
 
 type Cost struct {
 	id            int
 	nationID      int
 	componentID   int
-	costPerClient float
+	costPerClient float64
 	componentName string
 }
 
@@ -86,30 +84,25 @@ type Spending struct {
 	interventionID   int
 	subpopulationID  int
 	nationID         int
-	coverage         float
-	RRR              float
-	RRRTypeID        int
-	HIVStatus        int
-	RRRStandardError float
+	coverage         float64
+	rrr              float64
+	rrrTypeID        int
+	hivStatus        int
+	rrrStandardError float64
 }
 
 type Results struct {
+	prevalenceByGroup               [][]int
+	totalPlwa                       []int
+	plwaByGroup                     [][]int
+	incidenceRate                   [][]int
+	totalNewInfectionsByGroup       [][]int
 	totalPrevalence                 []int
 	totalNewInfections              []int
 	totalNewInfectionsPerPop        []int
 	cumulativeTotalNewInfections    []int
 	hivDeaths                       []int
-	cumulativeHivDeaths             []int
-	prevalenceByGroup               []int
-	prevalenceByGroup               []int
-	prevalenceByGroup               []int
-	prevalenceByGroup               []int
-	prevalenceByGroup               []int
-	prevalenceByGroup               []int
-	totalPlwa                       []int
-	plwaByGroup                     [][]int
-	incidenceRate                   [][]int
-	totalNewInfectionsByGroup       [][]int
+	cumulativeHivDeathsfectionsByGroup   [][]int
 	totalNewInfectionsByGroupPerPop [][]int
 	hivDeathsByGroup                [][]int
 	totalCostPerIntervention        int
@@ -121,6 +114,6 @@ type Results struct {
 	percentOfTotalPopByGroup        [][]int
 }
 
-func Predict(inputs *Inputs) {
-
+func Predict(inputs *Inputs) *Inputs {
+	return inputs;
 }
