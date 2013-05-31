@@ -2,12 +2,12 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"flag"
+	"fmt"
+	"github.com/ximus/ghimodel/models"
+	"io/ioutil"
 	"net/http"
 	"strconv"
-	"io/ioutil"
-	"github.com/ximus/ghimodel/models"
 )
 
 func main() {
