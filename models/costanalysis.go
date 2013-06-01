@@ -12,7 +12,7 @@ const (
 type Inputs struct {
 	spendings []Spending // InterventionSubpopulationNationCoverage
 	costs     []Cost
-	custom    CountryStats
+	countryStats    CountryStats
 }
 
 type CountryStats struct {
