@@ -1,3 +1,5 @@
+![GHD logo](http://globalhealthdecisions.com/test/wordpress/wp-content/themes/twentyeleven/images/newlogo.jpg)
+
 # Global Health Decisions - Data Models
 
 The data models underlying GHD and a simple web server to make them available over the network.
