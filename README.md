@@ -1,12 +1,32 @@
-## Installation
+# Global Health Decisions - Modeling
+
+Contains the data models underlying GHD and a simple webserver to make them available over the network.
+
+## Install
+
 ```bash
 cd $GOPATH
-mkdir -p github.com/alexgoodell/ghimodel
+mkdir -p github.com/alexgoodell
 git clone git@github.com:alexgoodell/ghd-modeling.git github.com/alexgoodell/ghimodel
 ```
 
 ## Use
+
 ```bash
 go install
-ghimodel
+ghdmodel
 ```
+
+## Debug
+
+Use gdb as debugger.
+OSX users need to codesign their gdb, see here: http://sourceware.org/gdb/wiki/BuildingOnDarwin
+General information on debugging go programs: http://golang.org/doc/gdb
+
+```bash
+go install -gcflags "-N -l"
+gdb ghdmodel
+```
+
+
+Copyright © 2013 Alex Goodell
