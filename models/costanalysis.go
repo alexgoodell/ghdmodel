@@ -14,13 +14,13 @@ type Inputs struct {
 	CountryProfile  CountryProfile
 }
 
-type NSlice []float64
+type NSlice []float32
 
 
 // Sums all parameters in passed slice
-func (n NSlice) sum() float64 {
+func (n NSlice) sum() float32 {
 
-	var sum float64
+	var sum float32
 	for i := 0; i < len(n); i++ {
 		sum += n[i]
 	}
@@ -29,8 +29,8 @@ func (n NSlice) sum() float64 {
 }
 
 // Sums all cells in specified disease stage
-func (n NSlice) s(s int) float64 {
-	var sum float64
+func (n NSlice) s(s int) float32 {
+	var sum float32
 	var q = make([]int,5,5)
 	q[0], q[1], q[2], q[3], q[4] = s , s + 13, s+13*2, s+13*3, s+13*4
 	for i := 0; i < len(q); i++ {
@@ -40,8 +40,8 @@ func (n NSlice) s(s int) float64 {
 }
 
 // Sums all cells in specified group
-func (n NSlice) g(g int) float64 {
-	var sum float64
+func (n NSlice) g(g int) float32 {
+	var sum float32
 	var start int = 13 * g
 	for i := start; i < start+13; i++ {
 		sum += n[i]
@@ -50,7 +50,7 @@ func (n NSlice) g(g int) float64 {
 }
 
 // Finds cell that matches group and disease stage
-func (n NSlice) gs(g int, s int) float64 {
+func (n NSlice) gs(g int, s int) float32 {
 	var i int = g*13 + s
 	return n[i]
 }
@@ -59,59 +59,59 @@ type CountryProfile struct {
 	Groups                                    []string
 	DiseaseAndTreatmentStages                 []string
 	PopulationSize                            int
-	PopulationSizeByGroup                     []float64
-	HivPrevalenceAdultsByGroup                []float64
-	HivPrevalence15yoByGroup                  []float64
-	ProprtionDiseaseStage                     []float64
-	InfectiousnessByDiseaseStage              []float64
-	HivDeathRateByDiseaseStage                []float64
-	HivDeathRateByDiseaseStageTx              []float64
-	InitialTreatmentAccessByDiseaseStage      []float64
-	TreatmentRecuitingRateByDiseaseStage      []float64
-	EntryRateGenPop                           float64
-	MaturationRate                            float64
-	DeathRateGeneralCauses                    float64
-	LifeExpectancy                            float64
-	SwInitiationRate                          float64
-	SwQuitRate                                float64
-	EntryRateMsm                              float64
-	EntryRateIdu                              float64
-	IduInitiationRate                         float64
-	IduSpontaneousQuitRate                    float64
-	IduDeathRate                              float64
-	IncreaseInInfectiousnessHomosexual        float64
-	DiseaseProgressionUntreatedAcuteToEarly   float64
-	DiseaseProgressionUntreatedEarlyToMedium  float64
-	DiseaseProgressionUntreatedMediumToLate   float64
-	DiseaseProgressionUntreatedLateToAdvanced float64
-	DiseaseProgressionUntreatedAdvancedToAids float64
-	DiseaseProgressionTreatedAcuteToEarly     float64
-	DiseaseProgressionTreatedEarlyToMedium    float64
-	DiseaseProgressionTreatedMediumToLate     float64
-	DiseaseProgressionTreatedLateToAdvanced   float64
-	DiseaseProgressionTreatedAdvancedToAids   float64
-	GeneralNonSwPartnershipsYearly            float64
-	GeneralCondomUse                          float64
-	GeneralCondomEffectiveness                float64
-	SwProportionWhoUseServices                float64
-	SwPartnershipsYearly                      float64
-	SwCondomUseRate                           float64
-	MsmPartnershipsYearly                     float64
-	MsmCondomUseRate                          float64
-	TreatmentReductionOfInfectiousness        float64
-	TreatmentQuitRate                         float64
-	PercentOfIduSexPartners                   float64
-	IduPartnershipsYearly                     float64
-	IduCondomUseRate                          float64
-	AnnualNumberOfInjections                  float64
-	PercentSharedInjections                   float64
-	PercentMaleIdus                           float64
-	InfectiousnessInSharedInjection           float64
-	CircEffectiveness                         float64
+	PopulationSizeByGroup                     []float32
+	HivPrevalenceAdultsByGroup                []float32
+	HivPrevalence15yoByGroup                  []float32
+	ProprtionDiseaseStage                     []float32
+	InfectiousnessByDiseaseStage              []float32
+	HivDeathRateByDiseaseStage                []float32
+	HivDeathRateByDiseaseStageTx              []float32
+	InitialTreatmentAccessByDiseaseStage      []float32
+	TreatmentRecuitingRateByDiseaseStage      []float32
+	EntryRateGenPop                           float32
+	MaturationRate                            float32
+	DeathRateGeneralCauses                    float32
+	LifeExpectancy                            float32
+	SwInitiationRate                          float32
+	SwQuitRate                                float32
+	EntryRateMsm                              float32
+	EntryRateIdu                              float32
+	IduInitiationRate                         float32
+	IduSpontaneousQuitRate                    float32
+	IduDeathRate                              float32
+	IncreaseInInfectiousnessHomosexual        float32
+	DiseaseProgressionUntreatedAcuteToEarly   float32
+	DiseaseProgressionUntreatedEarlyToMedium  float32
+	DiseaseProgressionUntreatedMediumToLate   float32
+	DiseaseProgressionUntreatedLateToAdvanced float32
+	DiseaseProgressionUntreatedAdvancedToAids float32
+	DiseaseProgressionTreatedAcuteToEarly     float32
+	DiseaseProgressionTreatedEarlyToMedium    float32
+	DiseaseProgressionTreatedMediumToLate     float32
+	DiseaseProgressionTreatedLateToAdvanced   float32
+	DiseaseProgressionTreatedAdvancedToAids   float32
+	GeneralNonSwPartnershipsYearly            float32
+	GeneralCondomUse                          float32
+	GeneralCondomEffectiveness                float32
+	SwProportionWhoUseServices                float32
+	SwPartnershipsYearly                      float32
+	SwCondomUseRate                           float32
+	MsmPartnershipsYearly                     float32
+	MsmCondomUseRate                          float32
+	TreatmentReductionOfInfectiousness        float32
+	TreatmentQuitRate                         float32
+	PercentOfIduSexPartners                   float32
+	IduPartnershipsYearly                     float32
+	IduCondomUseRate                          float32
+	AnnualNumberOfInjections                  float32
+	PercentSharedInjections                   float32
+	PercentMaleIdus                           float32
+	InfectiousnessInSharedInjection           float32
+	CircEffectiveness                         float32
 
-	Step 									  float64
-	EntryRateByGroupAndStage				  []([]float64)
-	DiseaseProgressionExitsByDiseaseStage     []float64
+	Step 									  float32
+	EntryRateByGroupAndStage				  []([]float32)
+	DiseaseProgressionExitsByDiseaseStage     []float32
 }
 
 
@@ -120,7 +120,7 @@ type Cost struct {
 	Id            int
 	NationID      int
 	ComponentID   int
-	CostPerClient float64
+	CostPerClient float32
 	ComponentName string
 }
 
@@ -129,34 +129,34 @@ type Spending struct {
 	InterventionID   int
 	SubpopulationID  int
 	NationID         int
-	Coverage         float64
-	RRR              float64
+	Coverage         float32
+	RRR              float32
 	RRRTypeID        int
 	HIVStatus        int
-	RRRStandardError float64
+	RRRStandardError float32
 }
 
 type Results struct {
-	TotalPrevalence                 []float64
-	TotalNewInfections              []float64
-	TotalNewInfectionsPerPop        []float64
-	CumulativeTotalNewInfections    []float64
-	HivDeaths                       []float64
-	CumulativeHivDeaths             []float64
-	PrevalenceByGroup               []float64
-	TotalPlwa                       []float64
-	PlwaByGroup                     [][]float64
-	IncidenceRate                   [][]float64
-	TotalNewInfectionsByGroup       [][]float64
-	TotalNewInfectionsByGroupPerPop [][]float64
-	HivDeathsByGroup                [][]float64
-	TotalCostPerIntervention        float64
-	TotalCostPerComponent           float64
-	ComponentNames                  float64
-	TotalCost                       float64
-	TotalPopulation                 []float64
-	PropOnArt                       []float64
-	PercentOfTotalPopByGroup        [][]float64
+	TotalPrevalence                 []float32
+	TotalNewInfections              []float32
+	TotalNewInfectionsPerPop        []float32
+	CumulativeTotalNewInfections    []float32
+	HivDeaths                       []float32
+	CumulativeHivDeaths             []float32
+	PrevalenceByGroup               []float32
+	TotalPlwa                       []float32
+	PlwaByGroup                     [][]float32
+	IncidenceRate                   [][]float32
+	TotalNewInfectionsByGroup       [][]float32
+	TotalNewInfectionsByGroupPerPop [][]float32
+	HivDeathsByGroup                [][]float32
+	TotalCostPerIntervention        float32
+	TotalCostPerComponent           float32
+	ComponentNames                  float32
+	TotalCost                       float32
+	TotalPopulation                 []float32
+	PropOnArt                       []float32
+	PercentOfTotalPopByGroup        [][]float32
 }
 
 
@@ -166,7 +166,7 @@ func Predict() {
 	//var theResults Results
 	var currentCycle = make(NSlice, 65, 65)
 	var previousCycle = make(NSlice, 65, 65)
-	//var secondPreviousCycle []float64
+	//var secondPreviousCycle []float32
 	var p CountryProfile
 
 
@@ -178,15 +178,15 @@ func Predict() {
 	p.Groups = []string { "Gen Pop Men", "Gen Pop Women", "SW Women", "MSM", "IDU" }
 	p.DiseaseAndTreatmentStages = []string { "Uninfected", "Acute", "Early" , "Med" ,"Late" ,"Adv", "AIDS", "Acute Tx", "Early Tx" , "Med Tx" ,"Late Tx" ,"Adv Tx", "AIDS Tx" }                                         
 	p.PopulationSize = 35067464                                                    
-	p.PopulationSizeByGroup = []float64 { 17390000.1, 16741000.1, 66964.1, 869500.1, 68262.1 }                                               
-	p.HivPrevalenceAdultsByGroup = []float64 {  0.061, 0.083, 0.60, 0.039, 0.400 }                                         
-	p.HivPrevalence15yoByGroup = []float64 { 0.02, 0.03 }                                           
-	p.ProprtionDiseaseStage = []float64 { 0.0, 0.05, 0.25, 0.20, 0.20, 0.20, 0.10 }                                               
-	p.InfectiousnessByDiseaseStage = []float64 { 0.16, 0.08, 0.09, 0.16, 0.5, 0.5 }                                          
-	p.HivDeathRateByDiseaseStage = []float64 { 0.0, 0.0, 0.1, 0.2, 0.3, 0.4, 0.45, 0.0, 0.0, 0.02, 0.06, 0.06, 0.08, 0.11 }                                           
-	p.HivDeathRateByDiseaseStageTx = []float64 {  }                                        
-	p.InitialTreatmentAccessByDiseaseStage = []float64 { 0.0, 0.0, 0.0, 0.0, 0.0, 0.2, 0.3 }                               
-	p.TreatmentRecuitingRateByDiseaseStage = []float64 { 0.0, 0.0, 0.0, 0.0, 0.1, 0.1, 0.1 } 
+	p.PopulationSizeByGroup = []float32 { 17390000.1, 16741000.1, 66964.1, 869500.1, 68262.1 }                                               
+	p.HivPrevalenceAdultsByGroup = []float32 {  0.061, 0.083, 0.60, 0.039, 0.400 }                                         
+	p.HivPrevalence15yoByGroup = []float32 { 0.02, 0.03 }                                           
+	p.ProprtionDiseaseStage = []float32 { 0.0, 0.05, 0.25, 0.20, 0.20, 0.20, 0.10 }                                               
+	p.InfectiousnessByDiseaseStage = []float32 { 0.16, 0.08, 0.09, 0.16, 0.5, 0.5 }                                          
+	p.HivDeathRateByDiseaseStage = []float32 { 0.0, 0.0, 0.1, 0.2, 0.3, 0.4, 0.45, 0.0, 0.0, 0.02, 0.06, 0.06, 0.08, 0.11 }                                           
+	p.HivDeathRateByDiseaseStageTx = []float32 {  }                                        
+	p.InitialTreatmentAccessByDiseaseStage = []float32 { 0.0, 0.0, 0.0, 0.0, 0.0, 0.2, 0.3 }                               
+	p.TreatmentRecuitingRateByDiseaseStage = []float32 { 0.0, 0.0, 0.0, 0.0, 0.1, 0.1, 0.1 } 
 	p.EntryRateGenPop =  0.09
 	p.MaturationRate =  0.07
 	p.DeathRateGeneralCauses =  0.01
@@ -231,14 +231,14 @@ func Predict() {
 
 	/// new creations
 
-	p.EntryRateByGroupAndStage = make([]([]float64), 5)  
-	p.EntryRateByGroupAndStage[0] = []float64{ p.EntryRateGenPop/2 , 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0  }
-	p.EntryRateByGroupAndStage[1] = []float64{ p.EntryRateGenPop/2 , 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0  }
-	p.EntryRateByGroupAndStage[2] = []float64{ 0 , 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0  }
-	p.EntryRateByGroupAndStage[3] = []float64{ p.EntryRateMsm , 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0  }
-	p.EntryRateByGroupAndStage[4] = []float64{ p.EntryRateIdu , 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0  }
+	p.EntryRateByGroupAndStage = make([]([]float32), 5)  
+	p.EntryRateByGroupAndStage[0] = []float32{ p.EntryRateGenPop/2 , 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0  }
+	p.EntryRateByGroupAndStage[1] = []float32{ p.EntryRateGenPop/2 , 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0  }
+	p.EntryRateByGroupAndStage[2] = []float32{ 0 , 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0  }
+	p.EntryRateByGroupAndStage[3] = []float32{ p.EntryRateMsm , 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0  }
+	p.EntryRateByGroupAndStage[4] = []float32{ p.EntryRateIdu , 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0  }
 
-	p.DiseaseProgressionExitsByDiseaseStage = []float64 { 0, p.DiseaseProgressionUntreatedAcuteToEarly, p.DiseaseProgressionUntreatedEarlyToMedium, p.DiseaseProgressionUntreatedMediumToLate, p.DiseaseProgressionUntreatedLateToAdvanced, p.DiseaseProgressionUntreatedAdvancedToAids, p.DiseaseProgressionTreatedAcuteToEarly, p.DiseaseProgressionTreatedEarlyToMedium, p.DiseaseProgressionUntreatedMediumToLate, p.DiseaseProgressionTreatedLateToAdvanced, p.DiseaseProgressionTreatedAdvancedToAids }
+	p.DiseaseProgressionExitsByDiseaseStage = []float32 { 0, p.DiseaseProgressionUntreatedAcuteToEarly, p.DiseaseProgressionUntreatedEarlyToMedium, p.DiseaseProgressionUntreatedMediumToLate, p.DiseaseProgressionUntreatedLateToAdvanced, p.DiseaseProgressionUntreatedAdvancedToAids, p.DiseaseProgressionTreatedAcuteToEarly, p.DiseaseProgressionTreatedEarlyToMedium, p.DiseaseProgressionUntreatedMediumToLate, p.DiseaseProgressionTreatedLateToAdvanced, p.DiseaseProgressionTreatedAdvancedToAids }
 
 
 
@@ -278,7 +278,7 @@ func Predict() {
 
 
 		// Step 6a: general dynamics
-		var _ float64 = dGeneral(previousCycle,g,s,p) + dProgEntries(previousCycle,g,s,p) + dProgExits(previousCycle,g,s,p) + dTreatment(previousCycle,g,s,p)
+		var _ float32 = dGeneral(previousCycle,g,s,p) + dProgEntries(previousCycle,g,s,p) + dProgExits(previousCycle,g,s,p) + dTreatment(previousCycle,g,s,p)
 
 
 		
@@ -307,18 +307,18 @@ func Predict() {
 
 
 
-func srcSum(n NSlice,g int,s int) float64 {
+func srcSum(n NSlice,g int,s int) float32 {
 	
 	//src code here
 	return 0
 }
 
 
-func dGeneral(n NSlice,g int,s int, p CountryProfile) float64 {
+func dGeneral(n NSlice,g int,s int, p CountryProfile) float32 {
 	return p.Step * n.gs(g,s) * (-p.MaturationRate - p.DeathRateGeneralCauses - p.HivDeathRateByDiseaseStage[s]) + n.sum() * p.EntryRateByGroupAndStage[g][s]
 }
 
-func dProgExits(n NSlice,g int,s int, p CountryProfile) float64 {
+func dProgExits(n NSlice,g int,s int, p CountryProfile) float32 {
 	if s == 0 {
 		return p.Step * n.gs(g,s) * srcSum(n,g,s)
 	} else {
@@ -326,7 +326,7 @@ func dProgExits(n NSlice,g int,s int, p CountryProfile) float64 {
 	}
 }
 
-func dProgEntries(n NSlice,g int,s int, p CountryProfile) float64 {
+func dProgEntries(n NSlice,g int,s int, p CountryProfile) float32 {
 	if s == 0 {
 		return p.Step * n.gs(g,s) * srcSum(n,g,s)
 	} else  {
@@ -334,7 +334,7 @@ func dProgEntries(n NSlice,g int,s int, p CountryProfile) float64 {
 	}
 }
 
-func dTreatment(n NSlice,g int,s int, p CountryProfile) float64 {
+func dTreatment(n NSlice,g int,s int, p CountryProfile) float32 {
 	if s == 0 {
 		return 0
 	} else  if s > 0 && s < 7 {
@@ -344,7 +344,7 @@ func dTreatment(n NSlice,g int,s int, p CountryProfile) float64 {
 	}
 }
 
-func dIduSw(n NSlice,g int,s int, p CountryProfile) float64 {
+func dIduSw(n NSlice,g int,s int, p CountryProfile) float32 {
 	if g == 0 {
 		return p.Step * ( n.gs(4,s) * p.PercentMaleIdus * p.IduSpontaneousQuitRate + n.gs(g,s) * - p.IduInitiationRate
 	} else if g == 1 {
