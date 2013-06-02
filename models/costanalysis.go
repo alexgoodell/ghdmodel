@@ -146,13 +146,13 @@ type Results struct {
 	PrevalenceByGroup               []float32
 	TotalPlwa                       []float32
 	PlwaByGroup                     [][]float32
-	IncidenceRate                   [][]float32
+	IncidenceRate                   []float32
 	TotalNewInfectionsByGroup       [][]float32
 	TotalNewInfectionsByGroupPerPop [][]float32
 	HivDeathsByGroup                [][]float32
 	TotalCostPerIntervention        float32
 	TotalCostPerComponent           float32
-	ComponentNames                  float32
+	ComponentNames                  []string
 	TotalCost                       float32
 	TotalPopulation                 []float32
 	PropOnArt                       []float32
@@ -293,8 +293,8 @@ func Predict(inputs *Inputs) *Results {
 						dProgExits(previousCycle,g,s,p) +
 						dTreatment(previousCycle,g,s,p)
 
-		fmt.Println(g,s)
-		fmt.Println(previousCycle)
+		// fmt.Println(g,s)
+		// fmt.Println(previousCycle)
 
 		// Determine which group and stage you are in
 		if s == 12 {

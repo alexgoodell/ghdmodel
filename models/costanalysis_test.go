@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"testing"
 	"io/ioutil"
+	"reflect"
+	"fmt"
 )
 
 const (
@@ -20,7 +22,10 @@ func TestPredict(t *testing.T) {
 	results := new(Results)
 	json.Unmarshal(resultsJson, results)
 
-	if (*results == *Predict(inputs)) {
+	fmt.Printf("%+v\n", *results)
+	fmt.Printf("%+v", *Predict(inputs))
+
+	if reflect.DeepEqual(*results, *Predict(inputs)) == false {
 		t.Errorf("Failed")
 	}
 }
