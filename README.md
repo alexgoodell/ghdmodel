@@ -1,6 +1,6 @@
-# Global Health Decisions - Modeling
+# Global Health Decisions - Data Models
 
-Contains the data models underlying GHD and a simple webserver to make them available over the network.
+The data models underlying GHD and a simple web server to make them available over the network.
 
 ## Install
 
@@ -20,7 +20,9 @@ ghdmodel
 ## Debug
 
 Use gdb as debugger.
+
 OSX users need to codesign their gdb, see here: http://sourceware.org/gdb/wiki/BuildingOnDarwin
+
 General information on debugging go programs: http://golang.org/doc/gdb
 
 ```bash
