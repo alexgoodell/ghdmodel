@@ -230,11 +230,11 @@ func Predict(inputs *Inputs) *Results {
 	// /// new creations
 	// NOTE: should be made private?
 	p.EntryRateByGroupAndStage = make([]([]float32), 5)
-	p.EntryRateByGroupAndStage[0] = []float32{ p.EntryRateGenPop/2 , 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0  }
-	p.EntryRateByGroupAndStage[1] = []float32{ p.EntryRateGenPop/2 , 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0  }
-	p.EntryRateByGroupAndStage[2] = []float32{ 0 , 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0  }
-	p.EntryRateByGroupAndStage[3] = []float32{ p.EntryRateMsm , 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0  }
-	p.EntryRateByGroupAndStage[4] = []float32{ p.EntryRateIdu , 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0  }
+	p.EntryRateByGroupAndStage[0] = []float32{ p.EntryRateGenPop/2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0  }
+	p.EntryRateByGroupAndStage[1] = []float32{ p.EntryRateGenPop/2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0  }
+	p.EntryRateByGroupAndStage[2] = []float32{ 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0  }
+	p.EntryRateByGroupAndStage[3] = []float32{ p.EntryRateMsm, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0  }
+	p.EntryRateByGroupAndStage[4] = []float32{ p.EntryRateIdu, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0  }
 
 	// NOTE: should be made private?
 	p.DiseaseProgressionExitsByDiseaseStage = []float32 {
@@ -248,8 +248,7 @@ func Predict(inputs *Inputs) *Results {
 		p.DiseaseProgressionTreatedEarlyToMedium,
 		p.DiseaseProgressionUntreatedMediumToLate,
 		p.DiseaseProgressionTreatedLateToAdvanced,
-		p.DiseaseProgressionTreatedAdvancedToAids
-	}
+		p.DiseaseProgressionTreatedAdvancedToAids }
 
 
 	// #############################################################################################################
@@ -257,8 +256,8 @@ func Predict(inputs *Inputs) *Results {
 	// #############################################################################################################
 
 	//calculate initial populations
-	for g, _ = range p.Groups {
-		for s, _ = range p.DiseaseAndTreatmentStages) {
+	for g, _ := range p.Groups {
+		for s, _ := range p.DiseaseStages {
 			var i int = g * 13 + s
 			if s == 0 {
 				currentCycle[i] = p.PopulationSizeByGroup[g] * (1 - p.HivPrevalenceAdultsByGroup[g])
@@ -302,7 +301,6 @@ func Predict(inputs *Inputs) *Results {
 			s = 0
 			g++
 		}
-		inputs
 
 	} //end cycle
 	return results

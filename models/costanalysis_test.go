@@ -3,6 +3,7 @@ package costanalysis
 import (
 	"encoding/json"
 	"testing"
+	"io/ioutil"
 )
 
 const (
@@ -11,7 +12,7 @@ const (
 )
 
 func TestPredict(t *testing.T) {
-	queryJson, _ := ioutil.ReadFile(queryPath)
+	queryJson, _ := ioutil.ReadFile(inputsPath)
 	inputs := new(Inputs)
 	json.Unmarshal(queryJson, inputs)
 
@@ -20,6 +21,6 @@ func TestPredict(t *testing.T) {
 	json.Unmarshal(resultsJson, results)
 
 	if (*results == *Predict(inputs)) {
-		t.Errorf("Sqrt(%v) = %v, want %v", in, x, out)
+		t.Errorf("Failed")
 	}
 }
