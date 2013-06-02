@@ -8,6 +8,11 @@ const (
 	NUMCYCLES = 40
 )
 
+// TODO: maybe some of these slices are fixed size and could just be arrays?
+var (
+	condomUse []float32
+)
+
 // Main data input struct
 type Inputs struct {
 	Spendings 		[]Spending // InterventionSubpopulationNationCoverage
@@ -28,6 +33,11 @@ func (n NSlice) sum() float32 {
 	return sum
 }
 
+func (n NSlice) proportion(g, s int) float32 {
+	return n.gs(g, s) / n.g(g)
+}
+
+// TODO: stop using hardcoded number of groups, stages. Use the data: len(groups), ..
 // Sums all cells in specified disease stage
 func (n NSlice) s(s int) float32 {
 	var sum float32
@@ -252,11 +262,12 @@ func Predict(inputs *Inputs) *Results {
 
 
 	// #############################################################################################################
-	// ####################################### Step 3: Compute initual pops, vary parameters by group and disease stage #######################################
+	// ############ Step 3: Compute initual pops, vary parameters by group and disease stage #######################
 	// #############################################################################################################
 
-	//calculate initial populations
+	//calculate initial populations, initialize other variables, matrices
 	for g, _ := range p.Groups {
+		// condomUse[g] = condomUse
 		for s, _ := range p.DiseaseStages {
 			var i int = g * 13 + s
 			if s == 0 {
@@ -307,31 +318,50 @@ func Predict(inputs *Inputs) *Results {
 } //end predict
 
 
-func srcSum(n NSlice,g int,s int) float32 {
-	// TODO src code here
+func srcSum(n NSlice, g int, s int, p *CountryProfile) float32 {
+	if g == 0 {
+		// scr(c,g,s) = [ 1 - (1-ρ) * (1-ω) *p(c,4,s)  p(c,0,s) * φ ]  * q(c,1,s)
+		// * r(c,g,0)* Is + [ (1-ρ) * (1-ω) *p(c,4,s)  p(c,0,s) * φ ] * q(c,4,s) * r(c,g,0) * Is
+		// + [p(c,2,s) * ς  π * p(c,0,s)] *q(c,2,s) *π  *  Is * (1-χ * η)
+		return (
+					1 -
+			    	(1 - p.PercentOfIduSexPartners) *
+			     	(1 - p.PercentMaleIdus) *
+				 	n.gs(4,s) *
+				 	p.GeneralNonSwPartnershipsYearly
+				) *
+				n.proportion(1, s) *
+				compositePartnerships(g) *
+				infectiousness(s) *
+				(
+					(1 - p.PercentOfIduSexPartners) *
+				)
+
+
+	}
 	return 0
 }
 
 
 func dGeneral(n NSlice, g int, s int, p *CountryProfile) float32 {
-	return p.Step * n.gs(g,s) *
+	return p.Step * n.gs(g, s) *
 		   (-p.MaturationRate - p.DeathRateGeneralCauses - p.HivDeathRateByDiseaseStage[s]) +
 		   n.sum() * p.EntryRateByGroupAndStage[g][s]
 }
 
 func dProgExits(n NSlice, g int, s int, p *CountryProfile) float32 {
 	if s == 0 {
-		return p.Step * n.gs(g,s) * srcSum(n,g,s)
+		return p.Step * n.gs(g, s) * srcSum(n, g, s)
 	} else {
-		return  p.Step * n.gs(g,s) * p.DiseaseProgressionExitsByDiseaseStage[s]
+		return  p.Step * n.gs(g, s) * p.DiseaseProgressionExitsByDiseaseStage[s]
 	}
 }
 
 func dProgEntries(n NSlice, g int, s int, p *CountryProfile) float32 {
 	if s == 0 {
-		return p.Step * n.gs(g,s) * srcSum(n,g,s)
+		return p.Step * n.gs(g, s) * srcSum(n, g, s, p)
 	} else  {
-		return p.Step * n.gs(g,s) * p.DiseaseProgressionExitsByDiseaseStage[s]
+		return p.Step * n.gs(g, s) * p.DiseaseProgressionExitsByDiseaseStage[s]
 	}
 }
 
@@ -363,6 +393,14 @@ func dIduSw(n NSlice, g int, s int, p *CountryProfile) float32 {
 	// TODO log this situation?
 	debug("Should not be here")
 	return 0
+}
+
+func compositePartnerships(g int) {
+	// CUg * PRg * (1-η) * (1-CUg) * PRg
+}
+
+func infectiousness(s int) {
+	// replace calls to this function by direct acces to the matrix, when available
 }
 
 func debug(s string) {
