@@ -1,5 +1,36 @@
 {
-	"CountryProfile": {
+	"countryProfile": {
+		"groups":[
+		  "Gen Pop Men",
+		  "Gen Pop Women",
+		  "SW Women",
+		  "MSM",
+		  "IDU"
+		],
+		"diseaseStages":[
+		  "Uninfected",
+		  "Acute",
+		  "Early",
+		  "Med",
+		  "Late",
+		  "Adv",
+		  "AIDS"
+		],
+		"diseaseAndTreatmentStages":[
+		  "Uninfected",
+		  "Acute",
+		  "Early",
+		  "Med",
+		  "Late",
+		  "Adv",
+		  "AIDS",
+		  "Acute Tx",
+		  "Early Tx",
+		  "Med Tx",
+		  "Late Tx",
+		  "Adv Tx",
+		  "AIDS Tx"
+		],
 		"populationSize":12672100,
 		"populationSizeByGroup":[
 		6450097,

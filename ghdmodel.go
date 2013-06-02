@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/ximus/ghimodel/models"
+	"github.com/ximus/ghdmodel/models"
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"os"
 )
 
 func main() {
@@ -19,12 +20,13 @@ func main() {
 }
 
 func costAnalysisHandler(respWriter http.ResponseWriter, req *http.Request) {
+	fmt.Println("GET /cost_analysis")
 	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		panic("Cannot read body?")
 	}
 	inputs := &costanalysis.Inputs{}
-	json.Unmarshal(body, &inputs)
+	json.Unmarshal(body, inputs)
 	if err != nil {
 		panic("Json error")
 	}
