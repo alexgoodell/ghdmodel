@@ -43,7 +43,7 @@ func (n NSlice) s(s int) float32 {
 func (n NSlice) g(g int) float32 {
 	var sum float32
 	var start int = 13 * g
-	for i := start; i < start+13; i++ {
+	for i := start; i < start + 13; i++ {
 		sum += n[i]
 	}
 	return sum
@@ -52,13 +52,13 @@ func (n NSlice) g(g int) float32 {
 // Finds cell that matches group and disease stage
 func (n NSlice) gs(g int, s int) float32 {
 	var i int = g*13 + s
-	return n[i] 
+	return n[i]
 }
 
 
 type CountryProfile struct {
 	Groups                                    []string
-	DiseaseAndTreatmentStages                 []string
+	DiseaseStages                             []string
 	PopulationSize                            int
 	PopulationSizeByGroup                     []float32
 	HivPrevalenceAdultsByGroup                []float32
@@ -163,28 +163,28 @@ type Results struct {
 func Predict(inputs *Inputs) *Results {
 	p := &inputs.CountryProfile
 	results := new(Results)
-	numPops := 65 //len(p.Groups) * len(p.DiseaseAndTreatmentStages)
+	numPops := 65 //len(p.Groups) * len(p.DiseaseStages)
 	currentCycle  := make(NSlice, numPops, numPops)
 	previousCycle := make(NSlice, numPops, numPops)
 	//var secondPreviousCycle []float32
 
 
-	// ############################################################################################################# 
+	// #############################################################################################################
 	// ####################################### Steps 1 and 2: prepare inputs #######################################
 	// #############################################################################################################
 
 	// // p.Groups = []string { "Gen Pop Men", "Gen Pop Women", "SW Women", "MSM", "IDU" }
-	// p.DiseaseAndTreatmentStages = []string { "Uninfected", "Acute", "Early" , "Med" ,"Late" ,"Adv", "AIDS", "Acute Tx", "Early Tx" , "Med Tx" ,"Late Tx" ,"Adv Tx", "AIDS Tx" }                                         
-	// p.PopulationSize = 35067464                                                    
-	// p.PopulationSizeByGroup = []float32 { 17390000.1, 16741000.1, 66964.1, 869500.1, 68262.1 }                                               
-	// p.HivPrevalenceAdultsByGroup = []float32 {  0.061, 0.083, 0.60, 0.039, 0.400 }                                         
-	// p.HivPrevalence15yoByGroup = []float32 { 0.02, 0.03 }                                           
-	// p.ProprtionDiseaseStage = []float32 { 0.0, 0.05, 0.25, 0.20, 0.20, 0.20, 0.10 }                                               
-	// p.InfectiousnessByDiseaseStage = []float32 { 0.16, 0.08, 0.09, 0.16, 0.5, 0.5 }                                          
-	// p.HivDeathRateByDiseaseStage = []float32 { 0.0, 0.0, 0.1, 0.2, 0.3, 0.4, 0.45, 0.0, 0.0, 0.02, 0.06, 0.06, 0.08, 0.11 }                                           
-	// p.HivDeathRateByDiseaseStageTx = []float32 {  }                                        
-	// p.InitialTreatmentAccessByDiseaseStage = []float32 { 0.0, 0.0, 0.0, 0.0, 0.0, 0.2, 0.3 }                               
-	// p.TreatmentRecuitingRateByDiseaseStage = []float32 { 0.0, 0.0, 0.0, 0.0, 0.1, 0.1, 0.1 } 
+	// p.DiseaseAndTreatmentStages = []string { "Uninfected", "Acute", "Early" , "Med" ,"Late" ,"Adv", "AIDS", "Acute Tx", "Early Tx" , "Med Tx" ,"Late Tx" ,"Adv Tx", "AIDS Tx" }
+	// p.PopulationSize = 35067464
+	// p.PopulationSizeByGroup = []float32 { 17390000.1, 16741000.1, 66964.1, 869500.1, 68262.1 }
+	// p.HivPrevalenceAdultsByGroup = []float32 {  0.061, 0.083, 0.60, 0.039, 0.400 }
+	// p.HivPrevalence15yoByGroup = []float32 { 0.02, 0.03 }
+	// p.ProprtionDiseaseStage = []float32 { 0.0, 0.05, 0.25, 0.20, 0.20, 0.20, 0.10 }
+	// p.InfectiousnessByDiseaseStage = []float32 { 0.16, 0.08, 0.09, 0.16, 0.5, 0.5 }
+	// p.HivDeathRateByDiseaseStage = []float32 { 0.0, 0.0, 0.1, 0.2, 0.3, 0.4, 0.45, 0.0, 0.0, 0.02, 0.06, 0.06, 0.08, 0.11 }
+	// p.HivDeathRateByDiseaseStageTx = []float32 {  }
+	// p.InitialTreatmentAccessByDiseaseStage = []float32 { 0.0, 0.0, 0.0, 0.0, 0.0, 0.2, 0.3 }
+	// p.TreatmentRecuitingRateByDiseaseStage = []float32 { 0.0, 0.0, 0.0, 0.0, 0.1, 0.1, 0.1 }
 	// p.EntryRateGenPop =  0.09
 	// p.MaturationRate =  0.07
 	// p.DeathRateGeneralCauses =  0.01
@@ -224,12 +224,12 @@ func Predict(inputs *Inputs) *Results {
 	// p.PercentSharedInjections =  0.4
 	// p.PercentMaleIdus =  0.8
 	// p.InfectiousnessInSharedInjection =  0.005
-	// p.CircEffectiveness =  0.6 
+	// p.CircEffectiveness =  0.6
 
 
 	// /// new creations
 	// NOTE: should be made private?
-	p.EntryRateByGroupAndStage = make([]([]float32), 5)  
+	p.EntryRateByGroupAndStage = make([]([]float32), 5)
 	p.EntryRateByGroupAndStage[0] = []float32{ p.EntryRateGenPop/2 , 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0  }
 	p.EntryRateByGroupAndStage[1] = []float32{ p.EntryRateGenPop/2 , 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0  }
 	p.EntryRateByGroupAndStage[2] = []float32{ 0 , 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0  }
@@ -237,26 +237,44 @@ func Predict(inputs *Inputs) *Results {
 	p.EntryRateByGroupAndStage[4] = []float32{ p.EntryRateIdu , 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0  }
 
 	// NOTE: should be made private?
-	p.DiseaseProgressionExitsByDiseaseStage = []float32 { 0, p.DiseaseProgressionUntreatedAcuteToEarly, p.DiseaseProgressionUntreatedEarlyToMedium, p.DiseaseProgressionUntreatedMediumToLate, p.DiseaseProgressionUntreatedLateToAdvanced, p.DiseaseProgressionUntreatedAdvancedToAids, p.DiseaseProgressionTreatedAcuteToEarly, p.DiseaseProgressionTreatedEarlyToMedium, p.DiseaseProgressionUntreatedMediumToLate, p.DiseaseProgressionTreatedLateToAdvanced, p.DiseaseProgressionTreatedAdvancedToAids }
+	p.DiseaseProgressionExitsByDiseaseStage = []float32 {
+		0,
+		p.DiseaseProgressionUntreatedAcuteToEarly,
+		p.DiseaseProgressionUntreatedEarlyToMedium,
+		p.DiseaseProgressionUntreatedMediumToLate,
+		p.DiseaseProgressionUntreatedLateToAdvanced,
+		p.DiseaseProgressionUntreatedAdvancedToAids,
+		p.DiseaseProgressionTreatedAcuteToEarly,
+		p.DiseaseProgressionTreatedEarlyToMedium,
+		p.DiseaseProgressionUntreatedMediumToLate,
+		p.DiseaseProgressionTreatedLateToAdvanced,
+		p.DiseaseProgressionTreatedAdvancedToAids
+	}
 
 
-	// ############################################################################################################# 
+	// #############################################################################################################
 	// ####################################### Step 3: Compute initual pops, vary parameters by group and disease stage #######################################
 	// #############################################################################################################
 
 	//calculate initial populations
-	for g := 0; g < len(p.Groups); g++ {
-		for s := 0; s < len(p.DiseaseAndTreatmentStages); s++ {
-			var i int = g*13 + s
+	for g, _ = range p.Groups {
+		for s, _ = range p.DiseaseAndTreatmentStages) {
+			var i int = g * 13 + s
 			if s == 0 {
 				currentCycle[i] = p.PopulationSizeByGroup[g] * (1 - p.HivPrevalenceAdultsByGroup[g])
 			}
 			if s > 0 && s < 7 {
-				currentCycle[i] = p.PopulationSizeByGroup[g] * p.HivPrevalenceAdultsByGroup[g] * p.ProprtionDiseaseStage[s] * (1- p.InitialTreatmentAccessByDiseaseStage[s])
+				currentCycle[i] = p.PopulationSizeByGroup[g] *
+								  p.HivPrevalenceAdultsByGroup[g] *
+								  p.ProprtionDiseaseStage[s] *
+								  (1 - p.InitialTreatmentAccessByDiseaseStage[s])
 			}
 			if s > 6 {
 				var ds int = s - 6
-				currentCycle[i] = p.PopulationSizeByGroup[g] * p.HivPrevalenceAdultsByGroup[g] * p.ProprtionDiseaseStage[ds] * (p.InitialTreatmentAccessByDiseaseStage[ds])
+				currentCycle[i] = p.PopulationSizeByGroup[g] *
+								  p.HivPrevalenceAdultsByGroup[g] *
+								  p.ProprtionDiseaseStage[ds] *
+								  p.InitialTreatmentAccessByDiseaseStage[ds]
 			}
 		} // end disease stage
 	} // end group
@@ -271,7 +289,10 @@ func Predict(inputs *Inputs) *Results {
 		// Step 6: develop dynamics
 
 		// Step 6a: general dynamics
-		var _ float32 = dGeneral(previousCycle,g,s,p) + dProgEntries(previousCycle,g,s,p) + dProgExits(previousCycle,g,s,p) + dTreatment(previousCycle,g,s,p)
+		var _ float32 = dGeneral(previousCycle,g,s,p) +
+						dProgEntries(previousCycle,g,s,p) +
+						dProgExits(previousCycle,g,s,p) +
+						dTreatment(previousCycle,g,s,p)
 
 		fmt.Println(g,s)
 		fmt.Println(previousCycle)
@@ -281,7 +302,9 @@ func Predict(inputs *Inputs) *Results {
 			s = 0
 			g++
 		}
-	} //end cycle	
+		inputs
+
+	} //end cycle
 	return results
 } //end predict
 
@@ -292,11 +315,13 @@ func srcSum(n NSlice,g int,s int) float32 {
 }
 
 
-func dGeneral(n NSlice,g int,s int, p *CountryProfile) float32 {
-	return p.Step * n.gs(g,s) * (-p.MaturationRate - p.DeathRateGeneralCauses - p.HivDeathRateByDiseaseStage[s]) + n.sum() * p.EntryRateByGroupAndStage[g][s]
+func dGeneral(n NSlice, g int, s int, p *CountryProfile) float32 {
+	return p.Step * n.gs(g,s) *
+		   (-p.MaturationRate - p.DeathRateGeneralCauses - p.HivDeathRateByDiseaseStage[s]) +
+		   n.sum() * p.EntryRateByGroupAndStage[g][s]
 }
 
-func dProgExits(n NSlice,g int,s int, p *CountryProfile) float32 {
+func dProgExits(n NSlice, g int, s int, p *CountryProfile) float32 {
 	if s == 0 {
 		return p.Step * n.gs(g,s) * srcSum(n,g,s)
 	} else {
@@ -304,7 +329,7 @@ func dProgExits(n NSlice,g int,s int, p *CountryProfile) float32 {
 	}
 }
 
-func dProgEntries(n NSlice,g int,s int, p *CountryProfile) float32 {
+func dProgEntries(n NSlice, g int, s int, p *CountryProfile) float32 {
 	if s == 0 {
 		return p.Step * n.gs(g,s) * srcSum(n,g,s)
 	} else  {
@@ -312,7 +337,7 @@ func dProgEntries(n NSlice,g int,s int, p *CountryProfile) float32 {
 	}
 }
 
-func dTreatment(n NSlice,g int,s int, p *CountryProfile) float32 {
+func dTreatment(n NSlice, g int, s int, p *CountryProfile) float32 {
 	if s == 0 {
 		return 0
 	} else  if s > 0 && s < 7 {
@@ -331,13 +356,14 @@ func dIduSw(n NSlice, g int, s int, p *CountryProfile) float32 {
 		return 0
 	} else if g == 2 {
 		return n.gs(g,s) * -p.SwQuitRate + n.gs(1,s) * p.SwInitiationRate
-	} else if g == 0 {
+	} else if g == 3 {
 		return 0
 	} else if g == 4 {
 		// return n.gs(g,s) * -p.IduSpontaneousQuitRate + n.gs() * p.IduInitiationRate
 		return 0
 	}
 	// TODO log this situation?
+	debug("Should not be here")
 	return 0
 }
 
