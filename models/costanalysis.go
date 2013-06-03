@@ -174,7 +174,7 @@ func Predict(inputs *Inputs) *Results {
 	numPops := 65 //len(p.Groups) * len(p.DiseaseStages)
 	currentCycle := make(NSlice, numPops, numPops)
 	previousCycle := make(NSlice, numPops, numPops)
-	secondPreviousCycle := make(NSlice, numPops, numPops)
+	//var secondPreviousCycle []float32
 
 	// #############################################################################################################
 	// ####################################### Steps 1 and 2: prepare inputs #######################################
@@ -283,9 +283,7 @@ func Predict(inputs *Inputs) *Results {
 			}
 		} // end disease stage
 	} // end group
-
 	previousCycle = currentCycle
-
 	//begin main loop
 	s := 0 // stage
 	g := 0 // group
@@ -299,95 +297,63 @@ func Predict(inputs *Inputs) *Results {
 		var _ float32 = dGeneral(previousCycle, g, s, p) +
 			dProgEntries(previousCycle, g, s, p) +
 			dProgExits(previousCycle, g, s, p) +
-			dTreatment(previousCycle, g, s, p) +
-			dIduSw(previousCycle, g, s, p)
+			dTreatment(previousCycle, g, s, p)
 
-<<<<<<< HEAD
 		// fmt.Println(g,s)
 		// fmt.Println(previousCycle)
-=======
-		fmt.Println(g, s)
-		fmt.Println(previousCycle)
->>>>>>> Finished idueswdynamics
 
-		// At the end of the group cycle, prepare the s and g variables
+		// Determine which group and stage you are in
 		if s == 12 {
 			s = 0
 			g++
 		}
 
-		//cycle is over, replace cycle variables
-		secondPreviousCycle = previousCycle
-		previousCycle = currentCycle
-		currentCycle := make(NSlice, numPops, numPops)
-
-		fmt.Println(previousCycle, secondPreviousCycle, currentCycle)
-
 	} //end cycle
 	return results
 } //end predict
-
-<<<<<<< HEAD
 
 func srcSum(n NSlice, g int, s int, p *CountryProfile) float32 {
 	if g == 0 {
 		// scr(c,g,s) = [ 1 - (1-ρ) * (1-ω) *p(c,4,s)  p(c,0,s) * φ ]  * q(c,1,s)
 		// * r(c,g,0)* Is + [ (1-ρ) * (1-ω) *p(c,4,s)  p(c,0,s) * φ ] * q(c,4,s) * r(c,g,0) * Is
 		// + [p(c,2,s) * ς  π * p(c,0,s)] *q(c,2,s) *π  *  Is * (1-χ * η)
-		return (
-					1 -
-			    	(1 - p.PercentOfIduSexPartners) *
-			     	(1 - p.PercentMaleIdus) *
-				 	n.gs(4,s) *
-				 	p.GeneralNonSwPartnershipsYearly
-				) *
-				n.proportion(1, s) *
-				compositePartnerships(g) *
-				infectiousness(s) *
-				(
-					(1 - p.PercentOfIduSexPartners) *
-				)
-
+		// return (
+		// 			1 -
+		// 	    	(1 - p.PercentOfIduSexPartners) *
+		// 	     	(1 - p.PercentMaleIdus) *
+		// 		 	n.gs(4,s) *
+		// 		 	p.GeneralNonSwPartnershipsYearly
+		// 		) *
+		// 		n.proportion(1, s) *
+		// 		compositePartnerships(g) *
+		// 		infectiousness(s) *
+		// 		(
+		// 			(1 - p.PercentOfIduSexPartners) *
+		// 		)
+		return 0
 
 	}
-=======
-func srcSum(n NSlice, g int, s int) float32 {
-	// TODO src code here
->>>>>>> Finished idueswdynamics
 	return 0
 }
 
 func dGeneral(n NSlice, g int, s int, p *CountryProfile) float32 {
-<<<<<<< HEAD
-	return p.Step * n.gs(g, s) *
-		   (-p.MaturationRate - p.DeathRateGeneralCauses - p.HivDeathRateByDiseaseStage[s]) +
-		   n.sum() * p.EntryRateByGroupAndStage[g][s]
-=======
-	return p.Step * (n.gs(g, s)*(-p.MaturationRate-p.DeathRateGeneralCauses-p.HivDeathRateByDiseaseStage[s]) + n.sum()*p.EntryRateByGroupAndStage[g][s])
->>>>>>> Finished idueswdynamics
+	return p.Step*n.gs(g, s)*
+		(-p.MaturationRate-p.DeathRateGeneralCauses-p.HivDeathRateByDiseaseStage[s]) +
+		n.sum()*p.EntryRateByGroupAndStage[g][s]
 }
 
 func dProgExits(n NSlice, g int, s int, p *CountryProfile) float32 {
 	if s == 0 {
-		return p.Step * n.gs(g, s) * srcSum(n, g, s)
+		return p.Step * n.gs(g, s) * srcSum(n, g, s, p)
 	} else {
-<<<<<<< HEAD
-		return  p.Step * n.gs(g, s) * p.DiseaseProgressionExitsByDiseaseStage[s]
-=======
 		return p.Step * n.gs(g, s) * p.DiseaseProgressionExitsByDiseaseStage[s]
->>>>>>> Finished idueswdynamics
 	}
 }
 
 func dProgEntries(n NSlice, g int, s int, p *CountryProfile) float32 {
 	if s == 0 {
-<<<<<<< HEAD
 		return p.Step * n.gs(g, s) * srcSum(n, g, s, p)
-	} else  {
-=======
-		return p.Step * n.gs(g, s) * srcSum(n, g, s)
 	} else {
->>>>>>> Finished idueswdynamics
 		return p.Step * n.gs(g, s) * p.DiseaseProgressionExitsByDiseaseStage[s]
 	}
 }
@@ -396,9 +362,9 @@ func dTreatment(n NSlice, g int, s int, p *CountryProfile) float32 {
 	if s == 0 {
 		return 0
 	} else if s > 0 && s < 7 {
-		return p.Step * (n.gs(g, s)*p.TreatmentRecuitingRateByDiseaseStage[s] + n.gs(g, s+6)*p.TreatmentQuitRate)
+		return p.Step*n.gs(g, s)*p.TreatmentRecuitingRateByDiseaseStage[s] + n.gs(g, s+6)*p.TreatmentQuitRate
 	} else {
-		return p.Step * (n.gs(g, s-6)*p.TreatmentRecuitingRateByDiseaseStage[s] + n.gs(g, s)*-p.TreatmentQuitRate)
+		return p.Step*n.gs(g, s-6)*p.TreatmentRecuitingRateByDiseaseStage[s] + n.gs(g, s)*-p.TreatmentQuitRate
 	}
 }
 
