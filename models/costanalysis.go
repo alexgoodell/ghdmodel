@@ -84,11 +84,13 @@ type Cgs struct {
 	Group        string
 	DiseaseStage string
 	Population   float32
+	Proportion   float32
 	Scr          float32
 	DGeneral     float32
 	DProgExits   float32
 	DProgEntries float32
 	DTreatment   float32
+	DIduSw       float32
 }
 
 type CountryProfile struct {
@@ -196,78 +198,23 @@ type Results struct {
 	PercentOfTotalPopByGroup        [][]float32
 }
 
+type ChData struct {
+	key   int
+	value float32
+}
+
 // Main entry point to the model
-//func Predict(inputs *Inputs) *Results {
-func Predict() float32 {
-
-	os.Create("output.csv")
-
-	var p CountryProfile
+func Predict(inputs *Inputs) *Results {
+	fmt.Println("Predicting...")
+	buildCsvHeaders()
+	results := new(Results)
+	fmt.Println("Initializted results: ", results)
+	p := &inputs.CountryProfile
 	numPops := 65 //len(p.Groups) * len(p.DiseaseStages)
 	currentCycle := make(NSlice, numPops, numPops)
 	previousCycle := make(NSlice, numPops, numPops)
 	allCycles := make([]Cgs, 10000, 10000)
-	//var secondPreviousCycle []float32
-
-	// #############################################################################################################
-	// ####################################### Steps 1 and 2: prepare inputs #######################################
-	// #############################################################################################################
-
-	p.Groups = []string{"Gen Pop Men", "Gen Pop Women", "SW Women", "MSM", "IDU"}
 	p.DiseaseStages = []string{"Uninfected", "Acute", "Early", "Med", "Late", "Adv", "AIDS", "Acute Tx", "Early Tx", "Med Tx", "Late Tx", "Adv Tx", "AIDS Tx"}
-	p.PopulationSize = 35067464
-	p.PopulationSizeByGroup = []float32{17390000.1, 16741000.1, 66964.1, 869500.1, 68262.1}
-	p.HivPrevalenceAdultsByGroup = []float32{0.061, 0.083, 0.60, 0.039, 0.400}
-	p.HivPrevalence15yoByGroup = []float32{0.02, 0.03}
-	p.ProprtionDiseaseStage = []float32{0.0, 0.05, 0.25, 0.20, 0.20, 0.20, 0.10}
-	p.InfectiousnessByDiseaseStage = []float32{0.0, 0.16, 0.08, 0.09, 0.16, 0.5, 0.5}
-	p.HivDeathRateByDiseaseStage = []float32{0.0, 0.0, 0.1, 0.2, 0.3, 0.4, 0.45, 0.0, 0.0, 0.02, 0.06, 0.06, 0.08, 0.11}
-	p.HivDeathRateByDiseaseStageTx = []float32{}
-	p.InitialTreatmentAccessByDiseaseStage = []float32{0.0, 0.0, 0.0, 0.0, 0.0, 0.2, 0.3}
-	p.TreatmentRecuitingRateByDiseaseStage = []float32{0.0, 0.0, 0.0, 0.0, 0.1, 0.1, 0.1}
-	p.EntryRateGenPop = 0.09
-	p.MaturationRate = 0.07
-	p.DeathRateGeneralCauses = 0.01
-	p.LifeExpectancy = 55
-	p.SwInitiationRate = 0.0006
-	p.SwQuitRate = 0.005
-	p.EntryRateMsm = 0.00225
-	p.EntryRateIdu = 0.00036
-	p.IduInitiationRate = 0.0001
-	p.IduSpontaneousQuitRate = 0.0003
-	p.IduDeathRate = 0.05
-	p.IncreaseInInfectiousnessHomosexual = 0.5
-	p.DiseaseProgressionUntreatedAcuteToEarly = 2
-	p.DiseaseProgressionUntreatedEarlyToMedium = 0.5
-	p.DiseaseProgressionUntreatedMediumToLate = 0.2
-	p.DiseaseProgressionUntreatedLateToAdvanced = 0.2
-	p.DiseaseProgressionUntreatedAdvancedToAids = 0.5
-	p.DiseaseProgressionTreatedAcuteToEarly = 0
-	p.DiseaseProgressionTreatedEarlyToMedium = 0.1
-	p.DiseaseProgressionTreatedMediumToLate = 0.1
-	p.DiseaseProgressionTreatedLateToAdvanced = 0.1
-	p.DiseaseProgressionTreatedAdvancedToAids = 0.1
-	p.GeneralNonSwPartnershipsYearly = 1.5
-	p.GeneralCondomUse = 0.3
-	p.GeneralCondomEffectiveness = 0.9
-	p.SwProportionWhoUseServices = 0.1
-	p.SwPartnershipsYearly = 120
-	p.SwCondomUseRate = 0.66
-	p.MsmPartnershipsYearly = 3
-	p.MsmCondomUseRate = 0.49
-	p.TreatmentReductionOfInfectiousness = 0.95
-	p.TreatmentQuitRate = 0.05
-	p.PercentOfIduSexPartners = 0.4
-	p.IduPartnershipsYearly = 4.5
-	p.IduCondomUseRate = 0.2
-	p.AnnualNumberOfInjections = 264
-	p.PercentSharedInjections = 0.4
-	p.PercentMaleIdus = 0.8
-	p.InfectiousnessInSharedInjection = 0.005
-	p.CircEffectiveness = 0.6
-
-	// /// new creations
-
 	p.Step = 0.5
 	// NOTE: should be made private?
 	p.EntryRateByGroupAndStage = make([]([]float32), 5)
@@ -341,7 +288,12 @@ func Predict() float32 {
 			thisCgs.DiseaseStage = p.DiseaseStages[s]
 			thisCgs.Population = currentCycle.gs(g, s)
 			thisCgs.Population = currentCycle.gs(g, s)
-
+			thisCgs.Proportion = currentCycle.proportion(g, s)
+			thisCgs.DGeneral = dGeneral(previousCycle, g, s, p)
+			thisCgs.DProgExits = dProgExits(previousCycle, g, s, p)
+			thisCgs.DProgEntries = dProgEntries(previousCycle, g, s, p)
+			thisCgs.DTreatment = dTreatment(previousCycle, g, s, p)
+			thisCgs.DIduSw = dIduSw(previousCycle, g, s, p)
 			toCsvLine(thisCgs)
 			var _ = append(allCycles, thisCgs)
 
@@ -351,51 +303,36 @@ func Predict() float32 {
 	//fmt.Println(previousCycle[:10])
 	//begin main loop
 
+	ch := make(chan ChData)
+
 	for c := 1; c < NUMCYCLES; c++ {
 		for g, _ := range p.Groups {
 			for s, _ := range p.DiseaseStages {
-
-				//fmt.Println(c, g, s, p.Groups[g], p.DiseaseStages[s])
-
-				totalDynamics := calculateTotalDynamics(previousCycle, g, s, p)
-				newPopulation := previousCycle.gs(g, s) + totalDynamics
-
-				currentCycle = currentCycle.setPopAtGS(newPopulation, g, s)
-
-				var thisCgs Cgs
-				thisCgs.C = c
-				thisCgs.G = g
-				thisCgs.S = s
-				thisCgs.Group = p.Groups[g]
-				thisCgs.DiseaseStage = p.DiseaseStages[s]
-				thisCgs.Population = currentCycle.gs(g, s)
-				thisCgs.Population = currentCycle.gs(g, s)
-
-				toCsvLine(thisCgs)
-				var _ = append(allCycles, thisCgs)
-
-				// if s == 0 && g == 0 {
-				// 	fmt.Println(dGeneral(previousCycle, g, s, p),
-				// 		dProgEntries(previousCycle, g, s, p),
-				// 		dProgExits(previousCycle, g, s, p),
-				// 		dTreatment(previousCycle, g, s, p))
-				// }
-
+				go func(previousCycle NSlice, c int, g int, s int, p *CountryProfile, ch chan ChData) {
+					totalDynamics := calculateTotalDynamics(previousCycle, g, s, p)
+					newPopulation := previousCycle.gs(g, s) + totalDynamics
+					csvLine(previousCycle, c, g, s, p, newPopulation)
+					ch <- ChData{g*5 + s, newPopulation}
+				}(previousCycle, c, g, s, p, ch)
 			} // end stage
 		} //end group
 
-		if c > 2 {
-			os.Exit(0)
-		}
-		previousCycle = currentCycle
+		for g, _ := range p.Groups {
+			for s, _ := range p.DiseaseStages {
+				theChData := <-ch
+				currentCycle[theChData.key] = theChData.value
+				fmt.Println(g, s, currentCycle[theChData.key])
+			} // end stage
+		} //end group
+		fmt.Println("cycle: ", c)
 
 	} //end cycle
 
 	// FIXME return results below
-	return 0
+	return results
 } //end predict
 
-func srcSum(n NSlice, g int, s int, p CountryProfile) float32 {
+func srcSum(n NSlice, g int, s int, p *CountryProfile) float32 {
 	var sum float32 = 0.0
 	for ss, _ := range p.DiseaseStages {
 		sum += src(n, g, ss, p)
@@ -405,7 +342,7 @@ func srcSum(n NSlice, g int, s int, p CountryProfile) float32 {
 	return sum
 }
 
-func src(n NSlice, g int, s int, p CountryProfile) float32 {
+func src(n NSlice, g int, s int, p *CountryProfile) float32 {
 	if g == 0 { // General population men
 
 		// from genpop women
@@ -508,19 +445,19 @@ func src(n NSlice, g int, s int, p CountryProfile) float32 {
 	return 0
 }
 
-func iduFemMate(n NSlice, p CountryProfile) float32 {
+func iduFemMate(n NSlice, p *CountryProfile) float32 {
 
-	return 1.5
-
-}
-
-func womenPartnership(n NSlice, p CountryProfile) float32 {
-
-	return 1.5
+	return ((1 - p.PercentOfIduSexPartners) * p.PercentMaleIdus * n.g(4) * p.IduPartnershipsYearly) / n.g(1)
 
 }
 
-func dGeneral(n NSlice, g int, s int, p CountryProfile) float32 {
+func womenPartnership(n NSlice, p *CountryProfile) float32 {
+
+	return (n.g(0)*p.GeneralNonSwPartnershipsYearly - (1-p.PercentOfIduSexPartners)*(1-p.PercentMaleIdus)*n.g(4)*p.IduPartnershipsYearly) / n.g(1)
+
+}
+
+func dGeneral(n NSlice, g int, s int, p *CountryProfile) float32 {
 	//fmt.Println("oh,", n.gs(g, s)*p.Step*-p.MaturationRate-p.DeathRateGeneralCauses-p.HivDeathRateByDiseaseStage[s]+p.Step*n.sum()*p.EntryRateByGroupAndStage[g][s])
 
 	return p.Step *
@@ -529,7 +466,7 @@ func dGeneral(n NSlice, g int, s int, p CountryProfile) float32 {
 
 }
 
-func dProgExits(n NSlice, g int, s int, p CountryProfile) float32 {
+func dProgExits(n NSlice, g int, s int, p *CountryProfile) float32 {
 	if s == 0 {
 		return -p.Step * n.gs(g, s) * srcSum(n, g, s, p)
 	} else {
@@ -537,7 +474,7 @@ func dProgExits(n NSlice, g int, s int, p CountryProfile) float32 {
 	}
 }
 
-func dProgEntries(n NSlice, g int, s int, p CountryProfile) float32 {
+func dProgEntries(n NSlice, g int, s int, p *CountryProfile) float32 {
 	if s == 0 {
 		return 0
 	} else {
@@ -545,7 +482,7 @@ func dProgEntries(n NSlice, g int, s int, p CountryProfile) float32 {
 	}
 }
 
-func dTreatment(n NSlice, g int, s int, p CountryProfile) float32 {
+func dTreatment(n NSlice, g int, s int, p *CountryProfile) float32 {
 	if s == 0 {
 		return 0
 	} else if s > 0 && s < 7 {
@@ -555,7 +492,7 @@ func dTreatment(n NSlice, g int, s int, p CountryProfile) float32 {
 	}
 }
 
-func dIduSw(n NSlice, g int, s int, p CountryProfile) float32 {
+func dIduSw(n NSlice, g int, s int, p *CountryProfile) float32 {
 	if g == 0 { // Genpop men
 		return p.Step * (n.gs(4, s)*p.PercentMaleIdus*p.IduSpontaneousQuitRate + n.gs(g, s)*-p.IduInitiationRate)
 	} else if g == 1 { // Genpop women
@@ -572,12 +509,11 @@ func dIduSw(n NSlice, g int, s int, p CountryProfile) float32 {
 	return 0
 }
 
-func compositePartnerships(g int, p CountryProfile) float32 {
-	// CUg * PRg * (1-η) * (1-CUg) * PRg
-	return 1.5 //p.
+func compositePartnerships(g int, p *CountryProfile) float32 {
+	return p.CondomUseByGroup[g]*p.PartnershipsByGroup[g]*(1-p.GeneralCondomEffectiveness) + p.GeneralCondomEffectiveness*p.CondomUseByGroup[g]
 }
 
-func infectiousness(s int, p CountryProfile) float32 {
+func infectiousness(s int, p *CountryProfile) float32 {
 	// replace calls to this function by direct acces to the matrix, when available
 	if s < 7 {
 		return p.InfectiousnessByDiseaseStage[s]
@@ -590,7 +526,7 @@ func debug(s string) {
 	fmt.Println(s)
 }
 
-func calculateTotalDynamics(previousCycle NSlice, g int, s int, p CountryProfile) float32 {
+func calculateTotalDynamics(previousCycle NSlice, g int, s int, p *CountryProfile) float32 {
 
 	dGen := dGeneral(previousCycle, g, s, p)
 	dProgEx := dProgExits(previousCycle, g, s, p)
@@ -602,52 +538,65 @@ func calculateTotalDynamics(previousCycle NSlice, g int, s int, p CountryProfile
 	return (dGen + dProgEx + dProgEn + dTx)
 }
 
+func csvLine(previousCycle NSlice, c int, g int, s int, p *CountryProfile, newPopulation float32) {
+
+	var thisCgs Cgs
+	thisCgs.C = c
+	thisCgs.G = g
+	thisCgs.S = s
+	thisCgs.Group = p.Groups[g]
+	thisCgs.DiseaseStage = p.DiseaseStages[s]
+	thisCgs.Population = newPopulation
+	//thisCgs.Proportion = currentCycle.proportion(g, s) //FIXME should be current cycle
+	thisCgs.DGeneral = dGeneral(previousCycle, g, s, p)
+	thisCgs.DProgExits = dProgExits(previousCycle, g, s, p)
+	thisCgs.DProgEntries = dProgEntries(previousCycle, g, s, p)
+	thisCgs.DTreatment = dTreatment(previousCycle, g, s, p)
+	thisCgs.DIduSw = dIduSw(previousCycle, g, s, p)
+
+	toCsvLine(thisCgs)
+
+}
+
 func toCsvLine(thisCgs Cgs) {
-
-	// file, err := os.OpenFile("test.csv", os.O_RDWR|os.O_APPEND|os.O_CREATE, 0666)
-	// if err != nil {
-	// 	fmt.Println("Error:", err)
-	// 	return
-	// }
-	// defer file.Close()
-	// writer := csv.NewWriter(file)
-	// returnError := writer.Write(a)
-	// if returnError != nil {
-	// 	fmt.Println(returnError)
-	// } else {
-
-	// 	fmt.Println("writing: ", a)
-	// }
-
-	file, error := os.OpenFile("output.csv", os.O_RDWR|os.O_APPEND|os.O_CREATE, 0666)
-
+	fmt.Println(".")
+	file, error := os.OpenFile("output.csv", os.O_RDWR|os.O_APPEND, 0666)
 	if error != nil {
 		panic(error)
 	}
 	defer file.Close()
-
-	// New Csv writer
 	writer := csv.NewWriter(file)
-
-	// Headers
-	// var new_headers = []string{"group_id", "account_id", "location_id", "payment_rating", "records_with_error"}
-	// returnError := writer.Write(new_headers)
-	// if returnError != nil {
-	// 	fmt.Println(returnError)
-	// }
-
 	thisCgsSlice := []string{strconv.Itoa(thisCgs.C),
 		fmt.Sprint(thisCgs.G),
 		fmt.Sprint(thisCgs.S),
 		fmt.Sprint(thisCgs.Group),
 		fmt.Sprint(thisCgs.DiseaseStage),
-		fmt.Sprint(thisCgs.Population)}
-
+		fmt.Sprint(thisCgs.Population),
+		fmt.Sprint(thisCgs.DGeneral),
+		fmt.Sprint(thisCgs.DProgExits),
+		fmt.Sprint(thisCgs.DProgEntries),
+		fmt.Sprint(thisCgs.DTreatment),
+		fmt.Sprint(thisCgs.DIduSw)}
 	returnError := writer.Write(thisCgsSlice)
 	if returnError != nil {
 		fmt.Println(returnError)
 	}
-
 	writer.Flush()
+}
 
+func buildCsvHeaders() {
+	os.Create("output.csv")
+	file, error := os.OpenFile("output.csv", os.O_RDWR|os.O_APPEND|os.O_CREATE, 0666)
+	if error != nil {
+		panic(error)
+	}
+	defer file.Close()
+	// New Csv wriier
+	writer := csv.NewWriter(file)
+	var new_headers = []string{"cycle", "group", "stage", "groupName", "stageName", "population", "Dgeneral", "DProgExits", "DProgEntries", "D Treatment", "SWIDU dynamics"}
+	returnError := writer.Write(new_headers)
+	if returnError != nil {
+		fmt.Println("error")
+	}
+	writer.Flush()
 }
