@@ -803,7 +803,7 @@ cycles.each_with_index do |cycle,c|
       # SCR GenPopMen
 
       ##Not needed ##total_female_idus = total_idus * (1-PercentMaleIdus) 
-	total_men_partnerships = subpopulations.g(0).c(c).compact.inject(0){|memo, n| memo + (n.Population) * (n.Partnerships) }
+	    total_men_partnerships = subpopulations.g(0).c(c).compact.inject(0){|memo, n| memo + (n.Population) * (n.Partnerships) }
       total_female_idu_partnerships = (1-PercentOfIduSexPartners) * (1-PercentMaleIdus) * subpopulations.g(4).c(c).compact.inject(0){|memo, n| memo + (n.Population) *(n.Partnerships)}
       probability_of_choosing_idu_partner = total_female_idu_partnerships / total_men_partnerships
       probability_of_choosing_non_idu_partner = 1 - probability_of_choosing_idu_partner
@@ -833,21 +833,21 @@ cycles.each_with_index do |cycle,c|
         #from idu males + genpop males
 
         ##total_male_idus = total_idus * PercentMaleIdus
-        total_male_idu_partnerships =  (1-PercentOfIduSexPartners) * PercentMaleIdus * subpopulations.g(4).c(c).compact.inject(0){|memo, n| memo + (n.Population) *(n.Partnerships)}
-        total_female_idu_partnerships =  (1-PercentOfIduSexPartners)*(1-PercentMaleIdus )* subpopulations.g(4).c(c).compact.inject(0){|memo, n| memo + (n.Population) * (n.Partnerships)}
-        male_idu_partnerships_offered_to_females = (1-PercentOfIduSexPartners) * PercentMaleIdus * subpopulations.g(4).c(c).compact.inject(0){|memo, n| memo + (n.Population) * (n.Partnerships)}
-        total_female_partnerships = total_men_partnerships - total_female_idu_partnerships + male_idu_partnerships_offered_to_females
-        probability_of_choosing_idu_partner = total_male_idu_partnerships / total_female_partnerships
-        probability_of_choosing_non_idu_partner = ( 1 - probability_of_choosing_idu_partner )
+          total_male_idu_partnerships =  (1-PercentOfIduSexPartners) * PercentMaleIdus * subpopulations.g(4).c(c).compact.inject(0){|memo, n| memo + (n.Population) *(n.Partnerships)}
+          total_female_idu_partnerships =  (1-PercentOfIduSexPartners)*(1-PercentMaleIdus )* subpopulations.g(4).c(c).compact.inject(0){|memo, n| memo + (n.Population) * (n.Partnerships)}
+          male_idu_partnerships_offered_to_females = (1-PercentOfIduSexPartners) * PercentMaleIdus * subpopulations.g(4).c(c).compact.inject(0){|memo, n| memo + (n.Population) * (n.Partnerships)}
+          total_female_partnerships = total_men_partnerships - total_female_idu_partnerships + male_idu_partnerships_offered_to_females
+          probability_of_choosing_idu_partner = total_male_idu_partnerships / total_female_partnerships
+          probability_of_choosing_non_idu_partner = ( 1 - probability_of_choosing_idu_partner )
 
-        male_mate = subpopulations.g(0).d(this_subpopulation.DiseaseStageId).c(c).compact[0]
-        idu_mate = subpopulations.g(4).d(this_subpopulation.DiseaseStageId).c(c).compact[0]
+          male_mate = subpopulations.g(0).d(this_subpopulation.DiseaseStageId).c(c).compact[0]
+          idu_mate = subpopulations.g(4).d(this_subpopulation.DiseaseStageId).c(c).compact[0]
 
-        src_for_females_from_male = probability_of_choosing_non_idu_partner * male_mate.Probability * average_number_of_parternships_for_women_from_men *(1-(this_subpopulation.CondomUse) *GeneralCondomEffectiveness) * male_mate.Infectiousness
-        src_for_females_from_idu_male = probability_of_choosing_idu_partner * idu_mate.Probability * average_partnerships_from_idus_to_female *(1-(idu_mate.CondomUse)*GeneralCondomEffectiveness)* idu_mate.Infectiousness 
-        total_src_for_females = src_for_females_from_male + src_for_females_from_idu_male
+          src_for_females_from_male = probability_of_choosing_non_idu_partner * male_mate.Probability * average_number_of_parternships_for_women_from_men *(1-(this_subpopulation.CondomUse) *GeneralCondomEffectiveness) * male_mate.Infectiousness
+          src_for_females_from_idu_male = probability_of_choosing_idu_partner * idu_mate.Probability * average_partnerships_from_idus_to_female *(1-(idu_mate.CondomUse)*GeneralCondomEffectiveness)* idu_mate.Infectiousness 
+          total_src_for_females = src_for_females_from_male + src_for_females_from_idu_male
 
-        this_subpopulation.Scr = total_src_for_females
+          this_subpopulation.Scr = total_src_for_females
 
         if s == 14
             #IRB.start_session(binding)
@@ -892,6 +892,8 @@ cycles.each_with_index do |cycle,c|
         scr_from_sex = PercentOfIduSexPartners * this_subpopulation.Probability * uninfected_idu.CompositePartnerships * this_subpopulation.Infectiousness 
         scr_from_needle_sharing = this_subpopulation.Probability * uninfected_idu.AnnualNumberOfInjections * this_subpopulation.InfectiousnessInSharedInjection
 # Annualnumberofinjecitons already includes percentake shared (computed in section 3 as risky injections)
+
+        puts "Risk from needle sharing:", this_subpopulation.InfectiousnessInSharedInjection
 
         this_subpopulation.Scr = scr_from_sex + scr_from_needle_sharing
 
@@ -1030,11 +1032,11 @@ end #cycles
 
 CSV.open("file.csv", "wb") do |csv|
   
-  csv << [ "Id" , "Cycle", "Population" , "Group", "DiseaseStage",  "Scr", "Probability", "Dgeneral", "DProgExits", "DProgEntries", "D Treatment", "SWIDU dynamics", "CondomUse", "Partnerships","PropMaleCirc" ] 
+  csv << [ "Id" , "Cycle", "Population" , "Group", "DiseaseStage",  "Scr", "Probability", "Dgeneral", "DProgExits", "DProgEntries", "D Treatment", "SWIDU dynamics", "CondomUse", "Partnerships","PropMaleCirc", "CompositePartnerships", "Infectiousness" ] 
 
   subpopulations.each_with_index do |this_subpopulation,s| 
     
-    csv << [ this_subpopulation.Id , this_subpopulation.Cycle,this_subpopulation.Population , this_subpopulation.Group, this_subpopulation.DiseaseStage,  this_subpopulation.Scr, this_subpopulation.Probability, this_subpopulation.DynamicsGeneral, this_subpopulation.DiseaseProgressionExits, this_subpopulation.DiseaseProgressionEntries, this_subpopulation.TreatmentDynamics, this_subpopulation.SwAndIduDynamics,  this_subpopulation.CondomUse, this_subpopulation.Partnerships, this_subpopulation.PropMaleCirc]
+    csv << [ this_subpopulation.Id , this_subpopulation.Cycle,this_subpopulation.Population , this_subpopulation.Group, this_subpopulation.DiseaseStage,  this_subpopulation.Scr, this_subpopulation.Probability, this_subpopulation.DynamicsGeneral, this_subpopulation.TotalDiseaseProgressionExits, this_subpopulation.DiseaseProgressionEntries, this_subpopulation.TreatmentDynamics, this_subpopulation.SwAndIduDynamics,  this_subpopulation.CondomUse, this_subpopulation.Partnerships, this_subpopulation.PropMaleCirc, this_subpopulation.CompositePartnerships, this_subpopulation.Infectiousness]
  
  end
  
