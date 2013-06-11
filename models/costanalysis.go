@@ -5,6 +5,7 @@ package costanalysis
 import (
 	"encoding/csv"
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 	"time"
@@ -185,7 +186,7 @@ type Results struct {
 	CumulativeTotalNewInfections    []float32
 	HivDeaths                       []float32
 	CumulativeHivDeaths             []float32
-	PrevalenceByGroup               []float32
+	PrevalenceByGroup               [][]float32
 	TotalPlwa                       []float32
 	PlwaByGroup                     [][]float32
 	IncidenceRate                   []float32
@@ -206,19 +207,51 @@ type ChData struct {
 	value float32
 }
 
+func initResults() *Results {
+
+	r := new(Results)
+
+	//non-slice
+	// r.TotalCostPerIntervention        := 0
+	// r.TotalCostPerComponent           float32 = 0
+	// r.TotalCost                       float32 = 0
+
+	//slice
+	// r.TotalPrevalence = make([]float32, 40)
+	// r.TotalNewInfections = make([]float32, 40)
+	// r.CumulativeTotalNewInfections = make([]float32, 40)
+	// r.HivDeaths = make([]float32, 40)
+	// r.CumulativeHivDeaths = make([]float32, 40)
+	// r.TotalPlwa = make([]float32, 40)
+	// r.IncidenceRate = make([]float32, 40)
+	// r.ComponentNames = make([]string, 40)
+	// r.TotalPopulation = make([]float32, 40)
+	// r.PropOnArt = make([]float32, 40)
+
+	//slice of slice
+	r.PrevalenceByGroup = make([][]float32, 5, 5)
+	r.PlwaByGroup = make([][]float32, 5, 5)
+	r.TotalNewInfectionsByGroup = make([][]float32, 5, 5)
+	r.TotalNewInfectionsByGroupPerPop = make([][]float32, 5, 5)
+	r.HivDeathsByGroup = make([][]float32, 5, 5)
+	r.PercentOfTotalPopByGroup = make([][]float32, 5, 5)
+
+	return r
+}
+
 // Main entry point to the model
 func Predict(inputs *Inputs) *Results {
 	beginTime := time.Now()
 	fmt.Println("Predicting results...")
 	buildCsvHeaders()
-	results := new(Results)
+	results := initResults()
 	//	fmt.Println("Initializted results: ", results)
 	p := &inputs.CountryProfile
 	numPops := 65 //len(p.Groups) * len(p.DiseaseStages)
 	currentCycle := make(NSlice, numPops, numPops)
 	previousCycle := make(NSlice, numPops, numPops)
-	secondPreviousCycle := make(NSlice, numPops, numPops)
-	allCycles := make([]Cgs, 10000, 10000)
+
+	// allCycles := make([]Cgs, 10000, 10000)
 	p.DiseaseStages = []string{"Uninfected", "Acute", "Early", "Med", "Late", "Adv", "AIDS", "Acute Tx", "Early Tx", "Med Tx", "Late Tx", "Adv Tx", "AIDS Tx"}
 	p.Step = 0.5
 	// NOTE: should be made private?
@@ -265,7 +298,6 @@ func Predict(inputs *Inputs) *Results {
 
 	//calculate initial populations, initialize other variables, matrices
 	for g, _ := range p.Groups {
-		// condomUse[g] = condomUse
 		for s, _ := range p.DiseaseStages {
 			var i int = g*13 + s
 			if s == 0 {
@@ -284,48 +316,24 @@ func Predict(inputs *Inputs) *Results {
 					p.ProprtionDiseaseStage[ds] *
 					p.InitialTreatmentAccessByDiseaseStage[ds]
 			}
-
-			var thisCgs Cgs
-			thisCgs.C = 0
-			thisCgs.G = g
-			thisCgs.S = s
-			thisCgs.Group = p.Groups[g]
-			thisCgs.DiseaseStage = p.DiseaseStages[s]
-			thisCgs.Population = currentCycle.gs(g, s)
-			thisCgs.Population = currentCycle.gs(g, s)
-			thisCgs.Proportion = currentCycle.proportion(g, s)
-			thisCgs.DGeneral = dGeneral(previousCycle, g, s, p)
-			thisCgs.DProgExits = dProgExits(previousCycle, g, s, p)
-			thisCgs.DProgEntries = dProgEntries(previousCycle, g, s, p)
-			thisCgs.DTreatment = dTreatment(previousCycle, g, s, p)
-			thisCgs.DIduSw = dIduSw(previousCycle, g, s, p)
-			thisCgs.Scr = src(previousCycle, g, s, p)
-			thisCgs.CompositePartnerships = compositePartnerships(g, p)
-			thisCgs.Infectiousness = infectiousness(s, p)
-			toCsvLine(thisCgs)
-			var _ = append(allCycles, thisCgs)
-
 		} // end disease stage
 	} // end group
+	results.add(0, currentCycle, currentCycle, p)
 	previousCycle = currentCycle
-	//fmt.Println(previousCycle[:10])
+
 	//begin main loop
-
 	ch := make(chan ChData)
-
 	for c := 1; c < NUMCYCLES; c++ {
-
 		for g, _ := range p.Groups {
 			for s, _ := range p.DiseaseStages {
 				go func(previousCycle NSlice, c int, g int, s int, p *CountryProfile, ch chan ChData) {
 					totalDynamics := calculateTotalDynamics(previousCycle, g, s, p)
 					newPopulation := previousCycle.gs(g, s) + totalDynamics
-					csvLine(previousCycle, c, g, s, p, newPopulation)
+					// csvLine(previousCycle, c, g, s, p, newPopulation)
 					ch <- ChData{g*13 + s, newPopulation}
 				}(previousCycle, c, g, s, p, ch)
 			} // end stage
 		} //end group
-
 		for g, _ := range p.Groups {
 			for s, _ := range p.DiseaseStages {
 				theChData := <-ch
@@ -333,27 +341,123 @@ func Predict(inputs *Inputs) *Results {
 				var _ int = g * s //just to avoid "not used error"
 			} // end stage
 		} //end group
-
-		fmt.Println("cycle: ", c)
-		fmt.Println(currentCycle)
-
-		secondPreviousCycle = previousCycle
+		results = results.add(c, currentCycle, previousCycle, p)
 		previousCycle = currentCycle
-		currentCycle := make(NSlice, numPops, numPops)
-
-		if 0 == 1 {
-			fmt.Print(secondPreviousCycle)
-			fmt.Print(currentCycle)
-		}
-
 	} //end cycle
 
 	// FIXME return results below
-
 	fmt.Println("Done")
 	fmt.Println("Time elapsed:", fmt.Sprint(time.Since(beginTime)))
+	//fmt.Println(results)
 	return results
 } //end predict
+
+func (r *Results) add(c int, currentCycle NSlice, previousCycle NSlice, p *CountryProfile) *Results {
+
+	// --- --- Prepare data --- ---
+
+	// Calculate basic variables
+	totalPopulation := currentCycle.sum()
+	totalInfected := totalPopulation - currentCycle.s(0)
+	totalPrevalence := totalInfected / totalPopulation
+	totalUninfedcted := totalPopulation - totalInfected
+	totalOnArt := currentCycle.s(7) + currentCycle.s(8) + currentCycle.s(9) + currentCycle.s(10) + currentCycle.s(11) + currentCycle.s(12)
+
+	totalNewInfectionsByGroup := make([]float32, 5, 5)
+	totalNewInfectionsByGroup[0] = -dProgExits(previousCycle, 0, 0, p) // FIXME: Not the best way to od this, since these have already been calculated
+	totalNewInfectionsByGroup[1] = -dProgExits(previousCycle, 1, 0, p)
+	totalNewInfectionsByGroup[2] = -dProgExits(previousCycle, 2, 0, p)
+	totalNewInfectionsByGroup[3] = -dProgExits(previousCycle, 3, 0, p)
+	totalNewInfectionsByGroup[4] = -dProgExits(previousCycle, 4, 0, p)
+	totalNewInfections := totalNewInfectionsByGroup[0] + totalNewInfectionsByGroup[1] + totalNewInfectionsByGroup[2] + totalNewInfectionsByGroup[3] + totalNewInfectionsByGroup[4]
+	hivDeathsByGroup := make([]float32, 5, 5)
+	hivDeathsByGroup[0] = dHivDeaths(previousCycle, 0, p)
+	hivDeathsByGroup[1] = dHivDeaths(previousCycle, 1, p)
+	hivDeathsByGroup[2] = dHivDeaths(previousCycle, 2, p)
+	hivDeathsByGroup[3] = dHivDeaths(previousCycle, 3, p)
+	hivDeathsByGroup[4] = dHivDeaths(previousCycle, 4, p)
+	var hivDeaths float32 = hivDeathsByGroup[0] + hivDeathsByGroup[1] + hivDeathsByGroup[2] + hivDeathsByGroup[3] + hivDeathsByGroup[4]
+
+	populationByGroup := make([]float32, 5, 5)
+	populationByGroup[0] = currentCycle.g(0)
+	populationByGroup[1] = currentCycle.g(1)
+	populationByGroup[2] = currentCycle.g(2)
+	populationByGroup[3] = currentCycle.g(3)
+	populationByGroup[4] = currentCycle.g(4)
+
+	plwaByGroup := make([]float32, 5, 5)
+	plwaByGroup[0] = populationByGroup[0] - currentCycle.gs(0, 0)
+	plwaByGroup[1] = populationByGroup[1] - currentCycle.gs(1, 0)
+	plwaByGroup[2] = populationByGroup[2] - currentCycle.gs(2, 0)
+	plwaByGroup[3] = populationByGroup[3] - currentCycle.gs(3, 0)
+	plwaByGroup[4] = populationByGroup[4] - currentCycle.gs(4, 0)
+
+	totalPlwa := plwaByGroup[0] + plwaByGroup[1] + plwaByGroup[2] + plwaByGroup[3] + plwaByGroup[4]
+
+	prevalenceByGroup := make([]float32, 5, 5)
+	prevalenceByGroup[0] = plwaByGroup[0] / populationByGroup[0]
+	prevalenceByGroup[1] = plwaByGroup[1] / populationByGroup[1]
+	prevalenceByGroup[2] = plwaByGroup[2] / populationByGroup[2]
+	prevalenceByGroup[3] = plwaByGroup[3] / populationByGroup[3]
+	prevalenceByGroup[4] = plwaByGroup[4] / populationByGroup[4]
+
+	// --- --- Append to existing results --- ---
+
+	// --- Basic ---
+	r.TotalPrevalence = append(r.TotalPrevalence, totalPrevalence)
+	r.TotalNewInfections = append(r.TotalNewInfections, totalNewInfections)
+	r.TotalNewInfectionsPerPop = append(r.TotalNewInfectionsPerPop, totalNewInfections/totalPopulation)
+	r.TotalPlwa = append(r.TotalPlwa, totalPlwa)
+	r.HivDeaths = append(r.HivDeaths, hivDeaths)
+	r.PropOnArt = append(r.PropOnArt, totalOnArt/totalInfected)
+	r.TotalPopulation = append(r.TotalPopulation, totalPopulation)
+
+	// -- Cumulative measurements --
+	if c != 0 { // Not cycle zero
+		r.CumulativeHivDeaths = append(r.CumulativeHivDeaths, float32(r.CumulativeHivDeaths[int(c)-1])+float32(hivDeaths))
+		r.CumulativeTotalNewInfections = append(r.CumulativeTotalNewInfections, r.CumulativeTotalNewInfections[c-1]+totalNewInfections)
+	} else { // Cycle zero
+		r.CumulativeHivDeaths = append(r.CumulativeHivDeaths, hivDeaths)
+		r.CumulativeTotalNewInfections = append(r.CumulativeTotalNewInfections, totalNewInfections)
+	}
+
+	// -- By Group  --
+	for i := 0; i < 5; i++ {
+		r.TotalNewInfectionsByGroup[i] = append(r.TotalNewInfectionsByGroup[i], totalNewInfectionsByGroup[i]) // FIXME: Not the best way to od this, since these have already been calculate
+		r.PlwaByGroup[i] = append(r.PlwaByGroup[i], plwaByGroup[i])
+		r.PrevalenceByGroup[i] = append(r.PrevalenceByGroup[i], prevalenceByGroup[i])
+		r.HivDeathsByGroup[i] = append(r.HivDeathsByGroup[i], hivDeathsByGroup[i])
+		r.TotalNewInfectionsByGroupPerPop[i] = append(r.TotalNewInfectionsByGroup[i], totalNewInfectionsByGroup[i]/populationByGroup[i])
+		r.PercentOfTotalPopByGroup[i] = append(r.PercentOfTotalPopByGroup[i], populationByGroup[i]/totalPopulation)
+	}
+
+	// -- Only even --
+	isOdd := math.Remainder(float64(c), 2)
+	if isOdd != 0 && c != 0 { //odd year past cycle 0, calculate yearly values here
+		totalNewInfectionsFromPrevAndCurrentCycle := totalNewInfections + r.TotalNewInfections[c-1]
+		totalSusepctibleFromPrevAndCurrentCycle := totalUninfedcted + r.TotalPopulation[c-1] - r.TotalPlwa[c-1]
+		r.IncidenceRate = append(r.IncidenceRate, totalNewInfectionsFromPrevAndCurrentCycle/totalSusepctibleFromPrevAndCurrentCycle)
+	} else if isOdd == 0 && c != 0 { //even cycle, not cycle 0
+		r.IncidenceRate = append(r.IncidenceRate, r.IncidenceRate[c-2])
+	}
+
+	// PrevalenceByGroup               []float32
+	// TotalPlwa                       []float32
+	// PlwaByGroup                     [][]float32
+	// TotalNewInfectionsByGroup       [][]float32
+	// TotalNewInfectionsByGroupPerPop [][]float32
+	// HivDeathsByGroup                [][]float32
+	// TotalCostPerIntervention        float32
+	// TotalCostPerComponent           float32
+	// ComponentNames                  []string
+	// TotalCost                       float32
+	// TotalPopulation                 []float32
+	// PropOnArt                       []float32
+	// PercentOfTotalPopByGroup        [][]float32
+
+	return r
+
+}
 
 func srcSum(n NSlice, g int, s int, p *CountryProfile) float32 {
 	var sum float32 = 0.0
@@ -520,21 +624,37 @@ func womenPartnership(n NSlice, p *CountryProfile) float32 {
 
 }
 
+func dHivDeaths(n NSlice, g int, p *CountryProfile) float32 {
+
+	var sum float32 = 0.0
+	for s := 0; s < 13; s++ {
+		if s < 7 {
+			sum += n.gs(g, s) * p.HivDeathRateByDiseaseStage[s]
+		} else {
+			sum += n.gs(g, s) * p.HivDeathRateByDiseaseStageTx[s-6]
+		}
+
+	}
+	return sum
+
+}
+
 func dGeneral(n NSlice, g int, s int, p *CountryProfile) float32 {
 	//fmt.Println("oh,", n.gs(g, s)*p.Step*-p.MaturationRate-p.DeathRateGeneralCauses-p.HivDeathRateByDiseaseStage[s]+p.Step*n.sum()*p.EntryRateByGroupAndStage[g][s])
 
 	if g == 4 { //idu's have different death rate
 
-		return p.Step *
-			(n.gs(g, s)*(-p.MaturationRate-p.IduDeathRate-p.HivDeathRateByDiseaseStage[s]) +
-				n.sum()*p.EntryRateByGroupAndStage[g][s])
-
+		if s < 7 {
+			return p.Step * (n.gs(g, s)*(-p.MaturationRate-p.IduDeathRate-p.HivDeathRateByDiseaseStage[s]) + n.sum()*p.EntryRateByGroupAndStage[g][s])
+		} else {
+			return p.Step * (n.gs(g, s)*(-p.MaturationRate-p.IduDeathRate-p.HivDeathRateByDiseaseStageTx[s-6]) + n.sum()*p.EntryRateByGroupAndStage[g][s])
+		}
 	} else {
-
-		return p.Step *
-			(n.gs(g, s)*(-p.MaturationRate-p.DeathRateGeneralCauses-p.HivDeathRateByDiseaseStage[s]) +
-				n.sum()*p.EntryRateByGroupAndStage[g][s])
-
+		if s < 7 {
+			return p.Step * (n.gs(g, s)*(-p.MaturationRate-p.DeathRateGeneralCauses-p.HivDeathRateByDiseaseStage[s]) + n.sum()*p.EntryRateByGroupAndStage[g][s])
+		} else {
+			return p.Step * (n.gs(g, s)*(-p.MaturationRate-p.DeathRateGeneralCauses-p.HivDeathRateByDiseaseStageTx[s-6]) + n.sum()*p.EntryRateByGroupAndStage[g][s])
+		}
 	}
 
 }
