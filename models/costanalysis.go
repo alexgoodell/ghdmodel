@@ -503,6 +503,8 @@ func applyInterventions(p *CountryProfile, spendings []Spending) *CountryProfile
 		} //end hiv status
 	} // end groups
 
+	fmt.Println("con", p.CondomUseByGroupAndHivStatus)
+	fmt.Println("par", p.PartnershipsByGroupAndHivStatus)
 	return p
 
 } // end apply intervention
@@ -518,7 +520,7 @@ func findCompositeRrr(spendings []Spending, g int, o int, h int) float32 {
 
 		sum *= (1 - spending.RRR*spending.Coverage)
 	}
-	fmt.Println("group ", g+1, " outcome ", o+1, " sum_rrr ", sum)
+	fmt.Println("hiv status ", h, " group ", g+1, " outcome ", o+1, " sum_rrr ", sum)
 	return sum
 
 }
@@ -538,9 +540,9 @@ func getHivStatus(s int) int {
 	var hivStatus int
 	if s == 0 {
 		hivStatus = 0
-	} else if s > 6 {
+	} else if s > 0 && s < 7 {
 		hivStatus = 1
-	} else {
+	} else if s > 6 {
 		hivStatus = 2
 	}
 
@@ -782,7 +784,7 @@ func dIduSw(n NSlice, g int, s int, p *CountryProfile) float32 {
 
 func compositePartnerships(g int, s int, p *CountryProfile) float32 {
 	hivStatus := getHivStatus(s)
-	return p.CondomUseByGroupAndHivStatus[g][hivStatus]*p.PartnershipsByGroup[g]*(1-p.GeneralCondomEffectiveness) + (1-p.CondomUseByGroup[g])*p.PartnershipsByGroup[g]
+	return p.CondomUseByGroupAndHivStatus[g][hivStatus]*p.PartnershipsByGroupAndHivStatus[g][hivStatus]*(1-p.GeneralCondomEffectiveness) + (1-p.CondomUseByGroupAndHivStatus[g][hivStatus])*p.PartnershipsByGroupAndHivStatus[g][hivStatus]
 }
 
 func infectiousness(s int, p *CountryProfile) float32 {
