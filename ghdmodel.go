@@ -27,7 +27,6 @@ func costAnalysisHandler(respWriter http.ResponseWriter, req *http.Request) {
 	}
 	inputs := new(costanalysis.Inputs)
 	json.Unmarshal(body, inputs)
-	fmt.Println(inputs)
 	if err != nil {
 		panic("Json error")
 	}

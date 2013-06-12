@@ -12,7 +12,8 @@ import (
 )
 
 const (
-	NUMCYCLES = 40
+	NUMCYCLES           = 40
+	NUMBERINTERVENTIONS = 8
 )
 
 // TODO: maybe some of these slices are fixed size and could just be arrays?
@@ -156,6 +157,10 @@ type CountryProfile struct {
 	DiseaseProgressionExitsByDiseaseStage []float32
 	CondomUseByGroup                      []float32
 	PartnershipsByGroup                   []float32
+
+	CondomUseByGroupAndHivStatus             [][]float32
+	PartnershipsByGroupAndHivStatus          [][]float32
+	AnnualNumberofRiskyInjectionsByHivStatus []float32
 }
 
 type Cost struct {
@@ -251,6 +256,10 @@ func Predict(inputs *Inputs) *Results {
 	currentCycle := make(NSlice, numPops, numPops)
 	previousCycle := make(NSlice, numPops, numPops)
 
+	// -- Apply intervention changes -- //
+
+	spendings := inputs.Spendings
+
 	// allCycles := make([]Cgs, 10000, 10000)
 	p.DiseaseStages = []string{"Uninfected", "Acute", "Early", "Med", "Late", "Adv", "AIDS", "Acute Tx", "Early Tx", "Med Tx", "Late Tx", "Adv Tx", "AIDS Tx"}
 	p.Step = 0.5
@@ -291,6 +300,13 @@ func Predict(inputs *Inputs) *Results {
 		p.SwPartnershipsYearly,
 		p.MsmPartnershipsYearly,
 		p.IduPartnershipsYearly}
+
+	p.AnnualNumberofRiskyInjectionsByHivStatus = make([]float32, 3, 3)
+	p.AnnualNumberofRiskyInjectionsByHivStatus[0] = p.AnnualNumberOfInjections * p.PercentSharedInjections
+	p.AnnualNumberofRiskyInjectionsByHivStatus[1] = p.AnnualNumberOfInjections * p.PercentSharedInjections
+	p.AnnualNumberofRiskyInjectionsByHivStatus[2] = p.AnnualNumberOfInjections * p.PercentSharedInjections
+
+	p = applyInterventions(p, spendings)
 
 	// #############################################################################################################
 	// ############ Step 3: Compute initual pops, vary parameters by group and disease stage #######################
@@ -459,6 +475,54 @@ func (r *Results) add(c int, currentCycle NSlice, previousCycle NSlice, p *Count
 
 }
 
+func applyInterventions(p *CountryProfile, spendings []Spending) *CountryProfile {
+
+	for q := 0; q < len(spendings); q++ {
+		fmt.Println(spendings[q])
+	}
+	fmt.Println("----------------------------------")
+
+	p.CondomUseByGroupAndHivStatus = make([][]float32, 5, 5)
+	p.PartnershipsByGroupAndHivStatus = make([][]float32, 5, 5)
+
+	for g, _ := range p.Groups {
+
+		p.CondomUseByGroupAndHivStatus[g] = make([]float32, 3, 3)
+		p.PartnershipsByGroupAndHivStatus[g] = make([]float32, 3, 3)
+
+		//foreach potential state in HIV status "negative, positive, treated"
+		for hivStatus := 0; hivStatus < 3; hivStatus++ {
+
+			//Compute total RRR from all interventions by group and calculate new condom use rate by group. This assumes interventions that do not affect a certain population group have RRR of 0.
+			// Outcome type 1 = Condom use rate
+
+			p.CondomUseByGroupAndHivStatus[g][hivStatus] = 1 - (1-p.CondomUseByGroup[g])*findCompositeRrr(spendings, g, 0, hivStatus)
+			p.PartnershipsByGroupAndHivStatus[g][hivStatus] = p.PartnershipsByGroup[g] * findCompositeRrr(spendings, g, 1, hivStatus)
+			p.AnnualNumberofRiskyInjectionsByHivStatus[hivStatus] = p.AnnualNumberOfInjections * p.PercentSharedInjections * findCompositeRrr(spendings, g, 2, hivStatus)
+
+		} //end hiv status
+	} // end groups
+
+	return p
+
+} // end apply intervention
+
+//find group (subpopulation), outcome, hiv status
+func findCompositeRrr(spendings []Spending, g int, o int, h int) float32 {
+
+	index_add := g*18 + o*3 + h
+	var sum float32 = 1
+	for i := 0; i < NUMBERINTERVENTIONS; i++ {
+		index := i*90 + index_add
+		spending := spendings[index]
+
+		sum *= (1 - spending.RRR*spending.Coverage)
+	}
+	fmt.Println("group ", g+1, " outcome ", o+1, " sum_rrr ", sum)
+	return sum
+
+}
+
 func srcSum(n NSlice, g int, s int, p *CountryProfile) float32 {
 	var sum float32 = 0.0
 	for ss, _ := range p.DiseaseStages {
@@ -469,7 +533,25 @@ func srcSum(n NSlice, g int, s int, p *CountryProfile) float32 {
 	return sum
 }
 
+func getHivStatus(s int) int {
+
+	var hivStatus int
+	if s == 0 {
+		hivStatus = 0
+	} else if s > 6 {
+		hivStatus = 1
+	} else {
+		hivStatus = 2
+	}
+
+	return hivStatus
+
+}
+
 func src(n NSlice, g int, s int, p *CountryProfile) float32 {
+
+	hivStatus := getHivStatus(s)
+
 	if g == 0 { // General population men
 
 		// (
@@ -494,7 +576,7 @@ func src(n NSlice, g int, s int, p *CountryProfile) float32 {
 			p.IduPartnershipsYearly/(n.g(0)*
 			p.GeneralNonSwPartnershipsYearly)) *
 			n.proportion(1, s) *
-			compositePartnerships(g, p) *
+			compositePartnerships(g, s, p) *
 			infectiousness(s, p)
 
 		// (
@@ -519,7 +601,7 @@ func src(n NSlice, g int, s int, p *CountryProfile) float32 {
 			(n.g(0) *
 				p.GeneralNonSwPartnershipsYearly) *
 			n.proportion(4, s) *
-			compositePartnerships(g, p) *
+			compositePartnerships(g, s, p) *
 			infectiousness(s, p)
 
 		//from sw
@@ -541,7 +623,7 @@ func src(n NSlice, g int, s int, p *CountryProfile) float32 {
 			n.proportion(2, s) *
 			p.SwProportionWhoUseServices *
 			infectiousness(s, p) *
-			(1 - p.SwCondomUseRate*p.GeneralCondomEffectiveness)
+			(1 - p.CondomUseByGroupAndHivStatus[2][hivStatus]*p.GeneralCondomEffectiveness)
 
 		//fmt.Println((n.gs(0, s)))
 		//fmt.Println(scrGpW, scrIdu, scrSw)
@@ -569,18 +651,18 @@ func src(n NSlice, g int, s int, p *CountryProfile) float32 {
 		TotalFemalePartnerships := TotalMenPartnerships - TotalFemaleIduPartnerships + MaleIduPartnershipsOfferedToFemales
 		ProbabilityOfChoosingIduPartner := TotalMaleIduPartnerships / TotalFemalePartnerships
 		ProbabilityOfChoosingNonIduPartner := 1 - ProbabilityOfChoosingIduPartner
-		SrcForFemalesFromMale := ProbabilityOfChoosingNonIduPartner * n.proportion(0, s) * AverageNumberOfParternshipsForWomenFromMen * (1 - (p.GeneralCondomUse)*p.GeneralCondomEffectiveness) * infectiousness(s, p)
-		SrcForFemalesFromIduMale := ProbabilityOfChoosingIduPartner * n.proportion(4, s) * AveragePartnershipsFromIdusToFemale * (1 - (p.IduCondomUseRate)*p.GeneralCondomEffectiveness) * infectiousness(s, p)
+		SrcForFemalesFromMale := ProbabilityOfChoosingNonIduPartner * n.proportion(0, s) * AverageNumberOfParternshipsForWomenFromMen * (1 - (p.CondomUseByGroupAndHivStatus[0][hivStatus])*p.GeneralCondomEffectiveness) * infectiousness(s, p)
+		SrcForFemalesFromIduMale := ProbabilityOfChoosingIduPartner * n.proportion(4, s) * AveragePartnershipsFromIdusToFemale * (1 - p.CondomUseByGroupAndHivStatus[4][hivStatus]*p.GeneralCondomEffectiveness) * infectiousness(s, p)
 		TotalSrcForFemales := SrcForFemalesFromMale + SrcForFemalesFromIduMale
 		return TotalSrcForFemales
 
 	}
 	if g == 2 { // Sex workers
-		return n.proportion(0, s) * compositePartnerships(2, p) * infectiousness(s, p)
+		return n.proportion(0, s) * compositePartnerships(2, s, p) * infectiousness(s, p)
 	}
 	if g == 3 { // Men who have sex with men
 
-		return n.proportion(3, s) * compositePartnerships(3, p) * infectiousness(s, p) * (1 + p.IncreaseInInfectiousnessHomosexual)
+		return n.proportion(3, s) * compositePartnerships(3, s, p) * infectiousness(s, p) * (1 + p.IncreaseInInfectiousnessHomosexual)
 	}
 	if g == 4 { // Injecting drug users
 
@@ -595,16 +677,12 @@ func src(n NSlice, g int, s int, p *CountryProfile) float32 {
 			treatmentModifier = 1.0
 		}
 
+		an := p.AnnualNumberofRiskyInjectionsByHivStatus[hivStatus]
+
 		return p.PercentOfIduSexPartners*
 			n.proportion(4, s)*
-			compositePartnerships(4, p)*
-			infectiousness(s, p) +
-
-			n.proportion(4, s)*
-				p.AnnualNumberOfInjections*
-				p.PercentSharedInjections*
-				p.InfectiousnessInSharedInjection*
-				treatmentModifier
+			compositePartnerships(4, s, p)*
+			infectiousness(s, p) + n.proportion(4, s)*an*p.InfectiousnessInSharedInjection*treatmentModifier
 	}
 
 	// TODO log this situation?
@@ -702,8 +780,9 @@ func dIduSw(n NSlice, g int, s int, p *CountryProfile) float32 {
 	return 0
 }
 
-func compositePartnerships(g int, p *CountryProfile) float32 {
-	return p.CondomUseByGroup[g]*p.PartnershipsByGroup[g]*(1-p.GeneralCondomEffectiveness) + (1-p.CondomUseByGroup[g])*p.PartnershipsByGroup[g]
+func compositePartnerships(g int, s int, p *CountryProfile) float32 {
+	hivStatus := getHivStatus(s)
+	return p.CondomUseByGroupAndHivStatus[g][hivStatus]*p.PartnershipsByGroup[g]*(1-p.GeneralCondomEffectiveness) + (1-p.CondomUseByGroup[g])*p.PartnershipsByGroup[g]
 }
 
 func infectiousness(s int, p *CountryProfile) float32 {
@@ -748,7 +827,7 @@ func csvLine(previousCycle NSlice, c int, g int, s int, p *CountryProfile, newPo
 	thisCgs.DTreatment = dTreatment(previousCycle, g, s, p)
 	thisCgs.DIduSw = dIduSw(previousCycle, g, s, p)
 	thisCgs.Scr = src(previousCycle, g, s, p)
-	thisCgs.CompositePartnerships = compositePartnerships(g, p)
+	thisCgs.CompositePartnerships = compositePartnerships(g, s, p)
 	thisCgs.Infectiousness = infectiousness(s, p)
 	toCsvLine(thisCgs)
 
