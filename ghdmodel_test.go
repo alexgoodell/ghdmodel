@@ -1,1 +1,1 @@
-ghdmodel_test.go
+package main
