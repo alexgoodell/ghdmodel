@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	port := flag.Int("port", 3000, "server port")
+	port := flag.Int("port", 80, "server port")
 
 	fmt.Println("Starting webserver. Listenning on port", *port)
 	http.HandleFunc("/cost_analysis", costAnalysisHandler)
