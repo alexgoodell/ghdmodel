@@ -12,8 +12,10 @@ import (
 )
 
 const (
-	NUMCYCLES           = 40
-	NUMBERINTERVENTIONS = 8
+	NUMCYCLES              = 40
+	NUMBERINTERVENTIONS    = 8
+	NUMBERSUBINTERVENTIONS = 20
+	NUMBEROFCOMPONENTS     = 60
 )
 
 // TODO: maybe some of these slices are fixed size and could just be arrays?
@@ -164,21 +166,23 @@ type CountryProfile struct {
 }
 
 type Cost struct {
-	Id            int
-	NationID      int
-	ComponentID   int
-	CostPerClient float32
-	ComponentName string
+	InterventionId      int
+	Id                  int
+	NationId            int
+	ComponentId         int
+	CostPerClient       float32
+	ComponentName       string
+	SuperInterventionId int
 }
 
 type Spending struct {
 	Id               int
-	InterventionID   int
-	SubpopulationID  int
-	NationID         int
+	InterventionId   int
+	SubpopulationId  int
+	NationId         int
 	Coverage         float32
 	RRR              float32
-	RRRTypeID        int
+	RRRTypeId        int
 	HIVStatus        int
 	RRRStandardError float32
 }
@@ -198,8 +202,8 @@ type Results struct {
 	TotalNewInfectionsByGroup       [][]float32
 	TotalNewInfectionsByGroupPerPop [][]float32
 	HivDeathsByGroup                [][]float32
-	TotalCostPerIntervention        float32
-	TotalCostPerComponent           float32
+	TotalCostPerIntervention        []float32
+	TotalCostPerComponent           []float32
 	ComponentNames                  []string
 	TotalCost                       float32
 	TotalPopulation                 []float32
@@ -213,26 +217,7 @@ type ChData struct {
 }
 
 func initResults() *Results {
-
 	r := new(Results)
-
-	//non-slice
-	// r.TotalCostPerIntervention        := 0
-	// r.TotalCostPerComponent           float32 = 0
-	// r.TotalCost                       float32 = 0
-
-	//slice
-	// r.TotalPrevalence = make([]float32, 40)
-	// r.TotalNewInfections = make([]float32, 40)
-	// r.CumulativeTotalNewInfections = make([]float32, 40)
-	// r.HivDeaths = make([]float32, 40)
-	// r.CumulativeHivDeaths = make([]float32, 40)
-	// r.TotalPlwa = make([]float32, 40)
-	// r.IncidenceRate = make([]float32, 40)
-	// r.ComponentNames = make([]string, 40)
-	// r.TotalPopulation = make([]float32, 40)
-	// r.PropOnArt = make([]float32, 40)
-
 	//slice of slice
 	r.PrevalenceByGroup = make([][]float32, 5, 5)
 	r.PlwaByGroup = make([][]float32, 5, 5)
@@ -240,7 +225,6 @@ func initResults() *Results {
 	r.TotalNewInfectionsByGroupPerPop = make([][]float32, 5, 5)
 	r.HivDeathsByGroup = make([][]float32, 5, 5)
 	r.PercentOfTotalPopByGroup = make([][]float32, 5, 5)
-
 	return r
 }
 
@@ -248,10 +232,10 @@ func initResults() *Results {
 func Predict(inputs *Inputs) *Results {
 	beginTime := time.Now()
 	fmt.Println("Predicting results...")
-	buildCsvHeaders()
+	//buildCsvHeaders()
 	results := initResults()
-	//	fmt.Println("Initializted results: ", results)
 	p := &inputs.CountryProfile
+	results = calculateCosts(inputs.Costs, inputs.Spendings, p, results)
 	numPops := 65 //len(p.Groups) * len(p.DiseaseStages)
 	currentCycle := make(NSlice, numPops, numPops)
 	previousCycle := make(NSlice, numPops, numPops)
@@ -472,15 +456,14 @@ func (r *Results) add(c int, currentCycle NSlice, previousCycle NSlice, p *Count
 	// PercentOfTotalPopByGroup        [][]float32
 
 	return r
-
 }
 
 func applyInterventions(p *CountryProfile, spendings []Spending) *CountryProfile {
 
 	for q := 0; q < len(spendings); q++ {
-		fmt.Println(spendings[q])
+		//fmt.Println(spendings[q])
 	}
-	fmt.Println("----------------------------------")
+	//fmt.Println("----------------------------------")
 
 	p.CondomUseByGroupAndHivStatus = make([][]float32, 5, 5)
 	p.PartnershipsByGroupAndHivStatus = make([][]float32, 5, 5)
@@ -503,8 +486,8 @@ func applyInterventions(p *CountryProfile, spendings []Spending) *CountryProfile
 		} //end hiv status
 	} // end groups
 
-	fmt.Println("con", p.CondomUseByGroupAndHivStatus)
-	fmt.Println("par", p.PartnershipsByGroupAndHivStatus)
+	//fmt.Println("con", p.CondomUseByGroupAndHivStatus)
+	//fmt.Println("par", p.PartnershipsByGroupAndHivStatus)
 	return p
 
 } // end apply intervention
@@ -517,10 +500,9 @@ func findCompositeRrr(spendings []Spending, g int, o int, h int) float32 {
 	for i := 0; i < NUMBERINTERVENTIONS; i++ {
 		index := i*90 + index_add
 		spending := spendings[index]
-
 		sum *= (1 - spending.RRR*spending.Coverage)
 	}
-	fmt.Println("hiv status ", h, " group ", g+1, " outcome ", o+1, " sum_rrr ", sum)
+	//fmt.Println("hiv status ", h, " group ", g+1, " outcome ", o+1, " sum_rrr ", sum)
 	return sum
 
 }
@@ -550,7 +532,45 @@ func getHivStatus(s int) int {
 
 }
 
-func src(n NSlice, g int, s int, p *CountryProfile) float32 {
+//note costs are reported in intervention types, while rrr is reported in super-intervention
+func calculateCosts(theCosts []Cost, theSpending []Spending, p *CountryProfile, theResults *Results) *Results {
+	//create array of costs seperated into their interventions
+	componentsByIntervention := make([][]Cost, NUMBERINTERVENTIONS+2) // FIXME the additional two is for ART and PMTCT, which have not yet been added to model
+	costPerClientByIntervention := make([]float32, NUMBERINTERVENTIONS+2)
+	totalCostByIntervention := make([]float32, NUMBERINTERVENTIONS+2)
+	totalCostPerComponent := make([]float32, NUMBEROFCOMPONENTS, NUMBEROFCOMPONENTS) //unsure of size
+	componentNames := make([]string, NUMBEROFCOMPONENTS, NUMBEROFCOMPONENTS)         //unsure of size
+	var totalCost float32
+	for i := 0; i < len(theCosts); i++ {
+		fmt.Println(theCosts[i])
+		componentsByIntervention[theCosts[i].SuperInterventionId-1] = append(componentsByIntervention[theCosts[i].SuperInterventionId-1], theCosts[i])
+		costPerClientByIntervention[theCosts[i].SuperInterventionId-1] += theCosts[i].CostPerClient
+	}
+	//go through each spending, figure out how much will cost, add to approcpriate arrays
+	for i := 0; i < len(theSpending)-18; i = i + 18 { //you move forward 18 because there are 18 grouping (outcomes * hivStatus) per intervention-subpop grouping
+		clientsForThisSpending := theSpending[i].Coverage * p.PopulationSizeByGroup[theSpending[i].SubpopulationId-1]
+		costForThisSpending := clientsForThisSpending * costPerClientByIntervention[theSpending[i].InterventionId-1]
+		totalCostByIntervention[theSpending[i].InterventionId-1] += costForThisSpending
+		totalCost += costForThisSpending
+		interventionComponents := componentsByIntervention[theSpending[i].InterventionId-1]
+		//now go through the components of this spending to itemize and fill in costsByComponent
+		for p := 0; p < len(interventionComponents); p++ {
+			totalCostPerComponent[interventionComponents[p].ComponentId-1] += clientsForThisSpending * interventionComponents[p].CostPerClient
+			componentNames[interventionComponents[p].ComponentId-1] = interventionComponents[p].ComponentName
+		}
+
+		fmt.Println("For intervention ", theSpending[i].InterventionId, " there are ", len(interventionComponents), " comps totalling to ", totalCostByIntervention[theSpending[i].InterventionId-1])
+
+	}
+
+	theResults.TotalCost = totalCost
+	theResults.ComponentNames = componentNames
+	theResults.TotalCostPerComponent = totalCostPerComponent
+	theResults.TotalCostPerIntervention = totalCostByIntervention
+	return theResults
+}
+
+func src(n NSlice, g int, s int, p *CountryProfile) float32 { // FIX ME: still need to use the array version of condom use and # of partners, currently use general, pre-intervention levels
 
 	hivStatus := getHivStatus(s)
 
@@ -736,6 +756,7 @@ func dGeneral(n NSlice, g int, s int, p *CountryProfile) float32 {
 			return p.Step * (n.gs(g, s)*(-p.MaturationRate-p.DeathRateGeneralCauses-p.HivDeathRateByDiseaseStageTx[s-6]) + n.sum()*p.EntryRateByGroupAndStage[g][s])
 		}
 	}
+	return 0 //shouldn't be here; just for compiler
 
 }
 
@@ -745,6 +766,7 @@ func dProgExits(n NSlice, g int, s int, p *CountryProfile) float32 {
 	} else {
 		return -p.Step * n.gs(g, s) * p.DiseaseProgressionExitsByDiseaseStage[s]
 	}
+	return 0 //shouldn't be here; just for compiler
 }
 
 func dProgEntries(n NSlice, g int, s int, p *CountryProfile) float32 {
@@ -753,6 +775,7 @@ func dProgEntries(n NSlice, g int, s int, p *CountryProfile) float32 {
 	} else {
 		return -dProgExits(n, g, s-1, p)
 	}
+	return 0 //shouldn't be here; just for compiler
 }
 
 func dTreatment(n NSlice, g int, s int, p *CountryProfile) float32 {
@@ -763,6 +786,7 @@ func dTreatment(n NSlice, g int, s int, p *CountryProfile) float32 {
 	} else {
 		return p.Step * (n.gs(g, s-6)*p.TreatmentRecuitingRateByDiseaseStage[s-6] + n.gs(g, s)*-p.TreatmentQuitRate)
 	}
+	return 0 //shouldn't be here; just for compiler
 }
 
 func dIduSw(n NSlice, g int, s int, p *CountryProfile) float32 {
@@ -794,6 +818,7 @@ func infectiousness(s int, p *CountryProfile) float32 {
 	} else {
 		return p.InfectiousnessByDiseaseStage[s-6] * (1 - p.TreatmentReductionOfInfectiousness)
 	}
+	return 0 //shouldn't be here; just for compiler
 }
 
 func debug(s string) {
