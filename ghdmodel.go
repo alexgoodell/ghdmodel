@@ -2,20 +2,19 @@ package main
 
 import (
 	"encoding/json"
-	"flag"
 	"fmt"
 	"github.com/alexgoodell/ghdmodel/models"
 	"io/ioutil"
 	"net/http"
-	"strconv"
+	"os"
 )
 
 func main() {
-	port := flag.Int("port", 80, "server port")
+	//port := flag.Int("port", 80, "server port")
 
-	fmt.Println("Starting webserver. Listenning on port", *port)
+	fmt.Println("Starting webserver. Listenning")
 	http.HandleFunc("/cost_analysis", costAnalysisHandler)
-	http.ListenAndServe(":"+strconv.Itoa(*port), nil)
+	http.ListenAndServe(":"+os.Getenv("PORT"), nil)
 }
 
 func costAnalysisHandler(respWriter http.ResponseWriter, req *http.Request) {
