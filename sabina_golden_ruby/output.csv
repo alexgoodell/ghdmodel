@@ -1,0 +1,260 @@
+0,0,0,Gen Pop Men,Uninfected,1.632921e+07
+0,0,1,Gen Pop Men,Acute,53039.5
+0,0,2,Gen Pop Men,Early,265197.5
+0,0,3,Gen Pop Men,Med,212158
+0,0,4,Gen Pop Men,Late,212158
+0,0,5,Gen Pop Men,Adv,169726.4
+0,0,6,Gen Pop Men,AIDS,74255.3
+0,0,7,Gen Pop Men,Acute Tx,0
+0,0,8,Gen Pop Men,Early Tx,0
+0,0,9,Gen Pop Men,Med Tx,0
+0,0,10,Gen Pop Men,Late Tx,0
+0,0,11,Gen Pop Men,Adv Tx,42431.6
+0,0,12,Gen Pop Men,AIDS Tx,31823.701
+0,1,0,Gen Pop Women,Uninfected,1.5351497e+07
+0,1,1,Gen Pop Women,Acute,69475.15
+0,1,2,Gen Pop Women,Early,347375.75
+0,1,3,Gen Pop Women,Med,277900.6
+0,1,4,Gen Pop Women,Late,277900.6
+0,1,5,Gen Pop Women,Adv,222320.48
+0,1,6,Gen Pop Women,AIDS,97265.2
+0,1,7,Gen Pop Women,Acute Tx,0
+0,1,8,Gen Pop Women,Early Tx,0
+0,1,9,Gen Pop Women,Med Tx,0
+0,1,10,Gen Pop Women,Late Tx,0
+0,1,11,Gen Pop Women,Adv Tx,55580.12
+0,1,12,Gen Pop Women,AIDS Tx,41685.09
+0,2,0,SW Women,Uninfected,26785.639
+0,2,1,SW Women,Acute,2008.9231
+0,2,2,SW Women,Early,10044.615
+0,2,3,SW Women,Med,8035.6924
+0,2,4,SW Women,Late,8035.6924
+0,2,5,SW Women,Adv,6428.554
+0,2,6,SW Women,AIDS,2812.4922
+0,2,7,SW Women,Acute Tx,0
+0,2,8,SW Women,Early Tx,0
+0,2,9,SW Women,Med Tx,0
+0,2,10,SW Women,Late Tx,0
+0,2,11,SW Women,Adv Tx,1607.1385
+0,2,12,SW Women,AIDS Tx,1205.3539
+0,3,0,MSM,Uninfected,835589.6
+0,3,1,MSM,Acute,1695.5253
+0,3,2,MSM,Early,8477.626
+0,3,3,MSM,Med,6782.101
+0,3,4,MSM,Late,6782.101
+0,3,5,MSM,Adv,5425.681
+0,3,6,MSM,AIDS,2373.7354
+0,3,7,MSM,Acute Tx,0
+0,3,8,MSM,Early Tx,0
+0,3,9,MSM,Med Tx,0
+0,3,10,MSM,Late Tx,0
+0,3,11,MSM,Adv Tx,1356.4203
+0,3,12,MSM,AIDS Tx,1017.3152
+0,4,0,IDU,Uninfected,40957.26
+0,4,1,IDU,Acute,1365.2421
+0,4,2,IDU,Early,6826.2104
+0,4,3,IDU,Med,5460.9683
+0,4,4,IDU,Late,5460.9683
+0,4,5,IDU,Adv,4368.775
+0,4,6,IDU,AIDS,1911.3389
+0,4,7,IDU,Acute Tx,0
+0,4,8,IDU,Early Tx,0
+0,4,9,IDU,Med Tx,0
+0,4,10,IDU,Late Tx,0
+0,4,11,IDU,Adv Tx,1092.1937
+0,4,12,IDU,AIDS Tx,819.14526
+1,0,0,Gen Pop Men,Uninfected,1.6218365e+07
+1,0,1,Gen Pop Men,Acute,244539.44
+1,0,2,Gen Pop Men,Early,419569.78
+1,0,3,Gen Pop Men,Med,266132.53
+1,0,4,Gen Pop Men,Late,187853.33
+1,0,5,Gen Pop Men,Adv,115953.7
+1,0,6,Gen Pop Men,AIDS,88870.02
+1,0,7,Gen Pop Men,Acute Tx,0
+1,0,8,Gen Pop Men,Early Tx,0
+1,0,9,Gen Pop Men,Med Tx,0
+1,0,10,Gen Pop Men,Late Tx,9392.667
+1,0,11,Gen Pop Men,Adv Tx,41485.547
+1,0,12,Gen Pop Men,AIDS Tx,34204.4
+1,1,0,Gen Pop Women,Uninfected,NaN
+1,1,1,Gen Pop Women,Acute,NaN
+1,1,2,Gen Pop Women,Early,NaN
+1,1,3,Gen Pop Women,Med,NaN
+1,1,4,Gen Pop Women,Late,NaN
+1,1,5,Gen Pop Women,Adv,NaN
+1,1,6,Gen Pop Women,AIDS,NaN
+1,1,7,Gen Pop Women,Acute Tx,NaN
+1,1,8,Gen Pop Women,Early Tx,NaN
+1,1,9,Gen Pop Women,Med Tx,NaN
+1,1,10,Gen Pop Women,Late Tx,NaN
+1,1,11,Gen Pop Women,Adv Tx,NaN
+1,1,12,Gen Pop Women,AIDS Tx,NaN
+1,2,0,SW Women,Uninfected,NaN
+1,2,1,SW Women,Acute,NaN
+1,2,2,SW Women,Early,NaN
+1,2,3,SW Women,Med,NaN
+1,2,4,SW Women,Late,NaN
+1,2,5,SW Women,Adv,NaN
+1,2,6,SW Women,AIDS,NaN
+1,2,7,SW Women,Acute Tx,NaN
+1,2,8,SW Women,Early Tx,NaN
+1,2,9,SW Women,Med Tx,NaN
+1,2,10,SW Women,Late Tx,NaN
+1,2,11,SW Women,Adv Tx,NaN
+1,2,12,SW Women,AIDS Tx,NaN
+1,3,0,MSM,Uninfected,NaN
+1,3,1,MSM,Acute,NaN
+1,3,2,MSM,Early,NaN
+1,3,3,MSM,Med,NaN
+1,3,4,MSM,Late,NaN
+1,3,5,MSM,Adv,NaN
+1,3,6,MSM,AIDS,NaN
+1,3,7,MSM,Acute Tx,NaN
+1,3,8,MSM,Early Tx,NaN
+1,3,9,MSM,Med Tx,NaN
+1,3,10,MSM,Late Tx,NaN
+1,3,11,MSM,Adv Tx,NaN
+1,3,12,MSM,AIDS Tx,NaN
+1,4,0,IDU,Uninfected,NaN
+1,4,1,IDU,Acute,NaN
+1,4,2,IDU,Early,NaN
+1,4,3,IDU,Med,NaN
+1,4,4,IDU,Late,NaN
+1,4,5,IDU,Adv,NaN
+1,4,6,IDU,AIDS,NaN
+1,4,7,IDU,Acute Tx,NaN
+1,4,8,IDU,Early Tx,NaN
+1,4,9,IDU,Med Tx,NaN
+1,4,10,IDU,Late Tx,NaN
+1,4,11,IDU,Adv Tx,NaN
+1,4,12,IDU,AIDS Tx,NaN
+2,0,0,Gen Pop Men,Uninfected,NaN
+2,0,1,Gen Pop Men,Acute,NaN
+2,0,2,Gen Pop Men,Early,NaN
+2,0,3,Gen Pop Men,Med,NaN
+2,0,4,Gen Pop Men,Late,NaN
+2,0,5,Gen Pop Men,Adv,NaN
+2,0,6,Gen Pop Men,AIDS,NaN
+2,0,7,Gen Pop Men,Acute Tx,NaN
+2,0,8,Gen Pop Men,Early Tx,NaN
+2,0,9,Gen Pop Men,Med Tx,NaN
+2,0,10,Gen Pop Men,Late Tx,NaN
+2,0,11,Gen Pop Men,Adv Tx,NaN
+2,0,12,Gen Pop Men,AIDS Tx,NaN
+2,1,0,Gen Pop Women,Uninfected,NaN
+2,1,1,Gen Pop Women,Acute,NaN
+2,1,2,Gen Pop Women,Early,NaN
+2,1,3,Gen Pop Women,Med,NaN
+2,1,4,Gen Pop Women,Late,NaN
+2,1,5,Gen Pop Women,Adv,NaN
+2,1,6,Gen Pop Women,AIDS,NaN
+2,1,7,Gen Pop Women,Acute Tx,NaN
+2,1,8,Gen Pop Women,Early Tx,NaN
+2,1,9,Gen Pop Women,Med Tx,NaN
+2,1,10,Gen Pop Women,Late Tx,NaN
+2,1,11,Gen Pop Women,Adv Tx,NaN
+2,1,12,Gen Pop Women,AIDS Tx,NaN
+2,2,0,SW Women,Uninfected,NaN
+2,2,1,SW Women,Acute,NaN
+2,2,2,SW Women,Early,NaN
+2,2,3,SW Women,Med,NaN
+2,2,4,SW Women,Late,NaN
+2,2,5,SW Women,Adv,NaN
+2,2,6,SW Women,AIDS,NaN
+2,2,7,SW Women,Acute Tx,NaN
+2,2,8,SW Women,Early Tx,NaN
+2,2,9,SW Women,Med Tx,NaN
+2,2,10,SW Women,Late Tx,NaN
+2,2,11,SW Women,Adv Tx,NaN
+2,2,12,SW Women,AIDS Tx,NaN
+2,3,0,MSM,Uninfected,NaN
+2,3,1,MSM,Acute,NaN
+2,3,2,MSM,Early,NaN
+2,3,3,MSM,Med,NaN
+2,3,4,MSM,Late,NaN
+2,3,5,MSM,Adv,NaN
+2,3,6,MSM,AIDS,NaN
+2,3,7,MSM,Acute Tx,NaN
+2,3,8,MSM,Early Tx,NaN
+2,3,9,MSM,Med Tx,NaN
+2,3,10,MSM,Late Tx,NaN
+2,3,11,MSM,Adv Tx,NaN
+2,3,12,MSM,AIDS Tx,NaN
+2,4,0,IDU,Uninfected,NaN
+2,4,1,IDU,Acute,NaN
+2,4,2,IDU,Early,NaN
+2,4,3,IDU,Med,NaN
+2,4,4,IDU,Late,NaN
+2,4,5,IDU,Adv,NaN
+2,4,6,IDU,AIDS,NaN
+2,4,7,IDU,Acute Tx,NaN
+2,4,8,IDU,Early Tx,NaN
+2,4,9,IDU,Med Tx,NaN
+2,4,10,IDU,Late Tx,NaN
+2,4,11,IDU,Adv Tx,NaN
+2,4,12,IDU,AIDS Tx,NaN
+3,0,0,Gen Pop Men,Uninfected,NaN
+3,0,1,Gen Pop Men,Acute,NaN
+3,0,2,Gen Pop Men,Early,NaN
+3,0,3,Gen Pop Men,Med,NaN
+3,0,4,Gen Pop Men,Late,NaN
+3,0,5,Gen Pop Men,Adv,NaN
+3,0,6,Gen Pop Men,AIDS,NaN
+3,0,7,Gen Pop Men,Acute Tx,NaN
+3,0,8,Gen Pop Men,Early Tx,NaN
+3,0,9,Gen Pop Men,Med Tx,NaN
+3,0,10,Gen Pop Men,Late Tx,NaN
+3,0,11,Gen Pop Men,Adv Tx,NaN
+3,0,12,Gen Pop Men,AIDS Tx,NaN
+3,1,0,Gen Pop Women,Uninfected,NaN
+3,1,1,Gen Pop Women,Acute,NaN
+3,1,2,Gen Pop Women,Early,NaN
+3,1,3,Gen Pop Women,Med,NaN
+3,1,4,Gen Pop Women,Late,NaN
+3,1,5,Gen Pop Women,Adv,NaN
+3,1,6,Gen Pop Women,AIDS,NaN
+3,1,7,Gen Pop Women,Acute Tx,NaN
+3,1,8,Gen Pop Women,Early Tx,NaN
+3,1,9,Gen Pop Women,Med Tx,NaN
+3,1,10,Gen Pop Women,Late Tx,NaN
+3,1,11,Gen Pop Women,Adv Tx,NaN
+3,1,12,Gen Pop Women,AIDS Tx,NaN
+3,2,0,SW Women,Uninfected,NaN
+3,2,1,SW Women,Acute,NaN
+3,2,2,SW Women,Early,NaN
+3,2,3,SW Women,Med,NaN
+3,2,4,SW Women,Late,NaN
+3,2,5,SW Women,Adv,NaN
+3,2,6,SW Women,AIDS,NaN
+3,2,7,SW Women,Acute Tx,NaN
+3,2,8,SW Women,Early Tx,NaN
+3,2,9,SW Women,Med Tx,NaN
+3,2,10,SW Women,Late Tx,NaN
+3,2,11,SW Women,Adv Tx,NaN
+3,2,12,SW Women,AIDS Tx,NaN
+3,3,0,MSM,Uninfected,NaN
+3,3,1,MSM,Acute,NaN
+3,3,2,MSM,Early,NaN
+3,3,3,MSM,Med,NaN
+3,3,4,MSM,Late,NaN
+3,3,5,MSM,Adv,NaN
+3,3,6,MSM,AIDS,NaN
+3,3,7,MSM,Acute Tx,NaN
+3,3,8,MSM,Early Tx,NaN
+3,3,9,MSM,Med Tx,NaN
+3,3,10,MSM,Late Tx,NaN
+3,3,11,MSM,Adv Tx,NaN
+3,3,12,MSM,AIDS Tx,NaN
+3,4,0,IDU,Uninfected,NaN
+3,4,1,IDU,Acute,NaN
+3,4,2,IDU,Early,NaN
+3,4,3,IDU,Med,NaN
+3,4,4,IDU,Late,NaN
+3,4,5,IDU,Adv,NaN
+3,4,6,IDU,AIDS,NaN
+3,4,7,IDU,Acute Tx,NaN
+3,4,8,IDU,Early Tx,NaN
+3,4,9,IDU,Med Tx,NaN
+3,4,10,IDU,Late Tx,NaN
+3,4,11,IDU,Adv Tx,NaN
+3,4,12,IDU,AIDS Tx,NaN
