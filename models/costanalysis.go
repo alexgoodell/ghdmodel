@@ -1,6 +1,6 @@
 package costanalysis
 
-// Test comment
+// FIX ME: AMC is not integrated
 
 import (
 	"encoding/csv"
@@ -103,7 +103,7 @@ type Cgs struct {
 type CountryProfile struct {
 	Groups                                    []string
 	DiseaseStages                             []string
-	PopulationSize                            int
+	PopulationSize                            float32
 	PopulationSizeByGroup                     []float32
 	HivPrevalenceAdultsByGroup                []float32
 	HivPrevalence15yoByGroup                  []float32
@@ -562,6 +562,20 @@ func calculateCosts(theCosts []Cost, theSpending []Spending, p *CountryProfile, 
 		fmt.Println("For intervention ", theSpending[i].InterventionId, " there are ", len(interventionComponents), " comps totalling to ", totalCostByIntervention[theSpending[i].InterventionId-1])
 
 	}
+
+	//ART
+	clientsForThisSpending := p.PopulationSize * (p.InitialTreatmentAccessByDiseaseStage[0]*p.ProprtionDiseaseStage[0] + p.InitialTreatmentAccessByDiseaseStage[1]*p.ProprtionDiseaseStage[1] + p.InitialTreatmentAccessByDiseaseStage[2]*p.ProprtionDiseaseStage[2] + p.InitialTreatmentAccessByDiseaseStage[3]*p.ProprtionDiseaseStage[3] + p.InitialTreatmentAccessByDiseaseStage[4]*p.ProprtionDiseaseStage[4] + p.InitialTreatmentAccessByDiseaseStage[5]*p.ProprtionDiseaseStage[5] + p.InitialTreatmentAccessByDiseaseStage[6]*p.ProprtionDiseaseStage[6])
+	costForThisSpending := clientsForThisSpending * costPerClientByIntervention[8] // 8 = art
+	totalCostByIntervention[8] += costForThisSpending
+	totalCost += costForThisSpending
+	interventionComponents := componentsByIntervention[8]
+	//now go through the components of this spending to itemize and fill in costsByComponent
+	for p := 0; p < len(interventionComponents); p++ {
+		totalCostPerComponent[interventionComponents[p].ComponentId-1] += clientsForThisSpending * interventionComponents[p].CostPerClient
+		componentNames[interventionComponents[p].ComponentId-1] = interventionComponents[p].ComponentName
+	}
+
+	fmt.Println("For intervention ", 8, " there are ", len(interventionComponents), " comps totalling to ", totalCostByIntervention[8])
 
 	theResults.TotalCost = totalCost
 	theResults.ComponentNames = componentNames
