@@ -1,6 +1,6 @@
 package costanalysis
 
-// Test comment
+// FIX ME: AMC is not integrated
 
 import (
 	"encoding/csv"
@@ -103,7 +103,7 @@ type Cgs struct {
 type CountryProfile struct {
 	Groups                                    []string
 	DiseaseStages                             []string
-	PopulationSize                            int
+	PopulationSize                            float32
 	PopulationSizeByGroup                     []float32
 	HivPrevalenceAdultsByGroup                []float32
 	HivPrevalence15yoByGroup                  []float32
