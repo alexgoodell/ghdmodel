@@ -163,6 +163,7 @@ type CountryProfile struct {
 	CondomUseByGroupAndHivStatus             [][]float32
 	PartnershipsByGroupAndHivStatus          [][]float32
 	AnnualNumberofRiskyInjectionsByHivStatus []float32
+	PercentCircByGroup                       []float32
 }
 
 type Cost struct {
@@ -290,6 +291,8 @@ func Predict(inputs *Inputs) *Results {
 	p.AnnualNumberofRiskyInjectionsByHivStatus[1] = p.AnnualNumberOfInjections * p.PercentSharedInjections
 	p.AnnualNumberofRiskyInjectionsByHivStatus[2] = p.AnnualNumberOfInjections * p.PercentSharedInjections
 
+	p.PercentCircByGroup = make([]float32, 5, 5)
+
 	p = applyInterventions(p, spendings)
 
 	// #############################################################################################################
@@ -337,8 +340,8 @@ func Predict(inputs *Inputs) *Results {
 		for g, _ := range p.Groups {
 			for s, _ := range p.DiseaseStages {
 				theChData := <-ch
-				currentCycle[theChData.key] = theChData.value
-				var _ int = g * s //just to avoid "not used error"
+				currentCycle[theChData.key] = theChData.value //assigning the new population
+				var _ int = g * s                             //just to avoid "not used error"
 			} // end stage
 		} //end group
 		results = results.add(c, currentCycle, previousCycle, p)
@@ -346,7 +349,7 @@ func Predict(inputs *Inputs) *Results {
 	} //end cycle
 
 	// FIXME return results below
-	fmt.Println("Done")
+	fmt.Println(p.PercentCircByGroup, "Done")
 	fmt.Println("Time elapsed:", fmt.Sprint(time.Since(beginTime)))
 	//fmt.Println(results)
 	return results
@@ -473,6 +476,11 @@ func applyInterventions(p *CountryProfile, spendings []Spending) *CountryProfile
 		p.CondomUseByGroupAndHivStatus[g] = make([]float32, 3, 3)
 		p.PartnershipsByGroupAndHivStatus[g] = make([]float32, 3, 3)
 
+		// circumsision doesn't have an RRR like the other interventions, it is used with the "CircEffectiveness" variable as part of  the country profile
+		// 1 is currently the interventionId of circumsision, so we just need to find the different coverages within the different groups.
+		// there are 18 different rows per group, so we can just use 0, then every 18th row afterwards.
+		p.PercentCircByGroup[g] = spendings[g*18].Coverage
+
 		//foreach potential state in HIV status "negative, positive, treated"
 		for hivStatus := 0; hivStatus < 3; hivStatus++ {
 
@@ -513,6 +521,12 @@ func srcSum(n NSlice, g int, s int, p *CountryProfile) float32 {
 		sum += src(n, g, ss, p)
 		//fmt.Println(sum)
 	}
+
+	// apply circumsision effects
+	// ----------------------------
+	// ruby code: this_subpopulation.Scr = total_scr_male * (1-this_subpopulation.PropMaleCirc.to_f * CircEffectiveness.to_f)
+
+	sum = sum * (1 - p.CircEffectiveness*p.PercentCircByGroup[g])
 
 	return sum
 }
@@ -663,6 +677,7 @@ func src(n NSlice, g int, s int, p *CountryProfile) float32 { // FIX ME: still n
 
 		//fmt.Println((n.gs(0, s)))
 		//fmt.Println(scrGpW, scrIdu, scrSw)
+
 		return scrGpW + scrIdu + scrSw
 	}
 
