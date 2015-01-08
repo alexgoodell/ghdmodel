@@ -764,9 +764,9 @@ func dHivDeaths(n NSlice, g int, p *CountryProfile) float32 {
 	var sum float32 = 0.0
 	for s := 0; s < 13; s++ {
 		if s < 7 {
-			sum += n.gs(g, s) * p.HivDeathRateByDiseaseStage[s] //where is step?
+			sum += n.gs(g, s) * p.HivDeathRateByDiseaseStage[s]
 		} else {
-			sum += n.gs(g, s) * p.HivDeathRateByDiseaseStageTx[s-6] //where is step?
+			sum += n.gs(g, s) * p.HivDeathRateByDiseaseStageTx[s-6]
 		}
 
 	}
@@ -808,7 +808,7 @@ func dProgEntries(n NSlice, g int, s int, p *CountryProfile) float32 {
 	if s == 0 {
 		return 0
 	} else {
-		return -dProgExits(n, g, s-1, p) //step isn't included, because included in dProgExits
+		return -dProgExits(n, g, s-1, p)
 	}
 	return 0 //shouldn't be here; just for compiler
 }
