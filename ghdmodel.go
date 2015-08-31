@@ -48,28 +48,37 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/alexgoodell/ghdmodel/models"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strconv"
+
+	"github.com/alexgoodell/ghdmodel/models"
 )
 
 func main() {
 	port := flag.Int("port", 3000, "server port")
 
-	fmt.Println("Starting webserver. Listenning on port", *port)
+	fmt.Println("Starting webserver. Listenning on port yo ", *port)
 	http.HandleFunc("/cost_analysis", costAnalysisHandler)
 	http.ListenAndServe(":"+strconv.Itoa(*port), nil)
 }
 
 func costAnalysisHandler(respWriter http.ResponseWriter, req *http.Request) {
 
-	fmt.Println("GET /cost_analysis")
-	body, err := ioutil.ReadAll(req.Body)
-	if err != nil {
-		panic("Cannot read body?")
-	}
+	// fmt.Println("GET /cost_analysis")
+	// body, err := ioutil.ReadAll(req.Body)
+	// if err != nil {
+	// 	panic("Cannot read body?")
+	// }
 	inputs := new(costanalysis.Inputs)
+
+	body, err := ioutil.ReadFile("/Applications/XAMPP/xamppfiles/htdocs/ghd_model_go/gocode/src/github.com/alexgoodell/iran/iran_inputs.json")
+	if err != nil {
+		fmt.Printf("File error: %v\n", err)
+		os.Exit(1)
+	}
+
 	json.Unmarshal(body, inputs)
 	if err != nil {
 		panic("Json error")

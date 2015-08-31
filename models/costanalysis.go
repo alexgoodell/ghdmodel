@@ -100,24 +100,58 @@ type Cgs struct {
 	Infectiousness        float32
 }
 
+type SpInputs struct {
+	Ethiopia SpCountry
+	Ghana    SpCountry
+	Russia   SpCountry
+	Kenya    SpCountry
+}
+
+type SpCountry struct {
+	SpPrev            []float32
+	SpIncidence       []float32
+	SpDeaths          []float32
+	SpPropOnArt       []float32
+	SpPopulation      []float32
+	SpCd4Distribution []float32
+	SpCoverageByCd4   []float32
+}
+
 type CountryProfile struct {
-	Groups                                    []string
-	DiseaseStages                             []string
-	PopulationSize                            float32
-	PopulationSizeByGroup                     []float32
-	HivPrevalenceAdultsByGroup                []float32
-	HivPrevalence15yoByGroup                  []float32
-	ProprtionDiseaseStage                     []float32
-	InfectiousnessByDiseaseStage              []float32
-	HivDeathRateByDiseaseStage                []float32
-	HivDeathRateByDiseaseStageTx              []float32
-	InitialTreatmentAccessByDiseaseStage      []float32
-	TreatmentRecuitingRateByDiseaseStage      []float32
-	InfectiousnessModifier                    float32
-	TreatmentRecuitingRateModifier            float32
-	DeathRateModifier                         float32
-	TreatedDeathRateModifier                  float32
-	DiseaseProgressionModifier                float32
+	SpectrumInputs SpInputs
+
+	CountryName string
+
+	InfectiousnessByDiseaseStageConverter_2_3        float32
+	InfectiousnessByDiseaseStageConverter_1_2        float32
+	InfectiousnessByDiseaseStageConverter_4_3        float32
+	InfectiousnessByDiseaseStageConverter_5_4        float32
+	InfectiousnessByDiseaseStageConverter_6_5        float32
+	HivDeathRateByDiseaseStateConverter_2_3          float32
+	HivDeathRateByDiseaseStateConverter_4_3          float32
+	HivDeathRateByDiseaseStateConverter_5_4          float32
+	HivDeathRateByDiseaseStateConverter_6_5          float32
+	HivDeathRateByDiseaseStageTxConverter            float32
+	DiseaseProgressionTreatedAcuteToEarlyConverter   float32
+	DiseaseProgressionTreatedEarlyToMediumConverter  float32
+	DiseaseProgressionTreatedMediumToLateConverter   float32
+	DiseaseProgressionTreatedLateToAdvancedConverter float32
+	DiseaseProgressionTreatedAdvancedToAidsConverter float32
+
+	Groups                               []string
+	DiseaseStages                        []string
+	PopulationSize                       float32
+	PopulationSizeByGroup                []float32
+	HivPrevalenceAdultsByGroup           []float32
+	HivPrevalence15yoByGroup             []float32
+	ProprtionDiseaseStage                []float32
+	InfectiousnessByDiseaseStage         []float32
+	HivDeathRateByDiseaseStage           []float32
+	HivDeathRateByDiseaseStageTx         []float32
+	InitialTreatmentAccessByDiseaseStage []float32
+	TreatmentRecuitingRateByDiseaseStage []float32
+	//used for calibration
+
 	EntryRateGenPop                           float32
 	MaturationRate                            float32
 	DeathRateGeneralCauses                    float32
@@ -236,8 +270,10 @@ func initResults() *Results {
 
 // Main entry point to the model
 func Predict(inputs *Inputs) *Results {
+
+	fmt.Println("hello world")
+
 	beginTime := time.Now()
-	//fmt.Println("Predicting results...")
 	//buildCsvHeaders()
 	results := initResults()
 	p := &inputs.CountryProfile
@@ -245,6 +281,11 @@ func Predict(inputs *Inputs) *Results {
 	numPops := 65 //len(p.Groups) * len(p.DiseaseStages)
 	currentCycle := make(NSlice, numPops, numPops)
 	previousCycle := make(NSlice, numPops, numPops)
+
+	//adjust sex worker partnerships
+
+	//fmt.Println("sex worker parnterships adjusted")
+	p.SwPartnershipsYearly = p.SwPartnershipsYearly * 0.1
 
 	// -- Apply intervention changes -- //
 
@@ -337,7 +378,7 @@ func Predict(inputs *Inputs) *Results {
 				go func(previousCycle NSlice, c int, g int, s int, p *CountryProfile, ch chan ChData) {
 					totalDynamics := calculateTotalDynamics(previousCycle, g, s, p)
 					newPopulation := previousCycle.gs(g, s) + totalDynamics
-					// csvLine(previousCycle, c, g, s, p, newPopulation)
+					//csvLine(previousCycle, c, g, s, p, newPopulation)
 					ch <- ChData{g*13 + s, newPopulation}
 				}(previousCycle, c, g, s, p, ch)
 			} // end stage
@@ -729,7 +770,7 @@ func src(n NSlice, g int, s int, p *CountryProfile) float32 { // FIX ME: still n
 		if s == 0 {
 			treatmentModifier = 0
 		} else if s > 6 {
-			treatmentModifier = 0.5
+			treatmentModifier = 0.5 //TODO I assume this is the reduction in infectiousness for IDU on treatment
 		} else {
 			treatmentModifier = 1.0
 		}
@@ -764,9 +805,9 @@ func dHivDeaths(n NSlice, g int, p *CountryProfile) float32 {
 	var sum float32 = 0.0
 	for s := 0; s < 13; s++ {
 		if s < 7 {
-			sum += n.gs(g, s) * p.HivDeathRateByDiseaseStage[s] //where is step?
+			sum += p.Step * n.gs(g, s) * p.HivDeathRateByDiseaseStage[s] //where is step? (jan 2015 added)
 		} else {
-			sum += n.gs(g, s) * p.HivDeathRateByDiseaseStageTx[s-6] //where is step?
+			sum += p.Step * n.gs(g, s) * p.HivDeathRateByDiseaseStageTx[s-6] //where is step? (jan 2015 added)
 		}
 
 	}
